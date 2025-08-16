@@ -1,0 +1,2 @@
+# wildcard_tagnodes has no external Python dependencies.
+# This file exists so Codex/CI runners can detect Python setup steps.
