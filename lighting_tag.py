@@ -1,0 +1,37 @@
+# lighting_tag.py
+# ライティングタグ生成ノード
+
+from .util import rng_from_seed, maybe, pick, join_clean, limit_len, normalize
+from .vocab.lighting_vocab import STYLES, DIRECTIONS, TIMES, COLORS
+
+class LightingTagNode:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "seed": ("INT", {"default": 42, "min": 0, "max": 2**31 - 1}),
+            },
+            "optional": {
+                "最大文字数": ("INT", {"default": 80, "min": 0, "max": 4096}),
+                "小文字化": ("BOOL", {"default": True}),
+                "確率: 向き": ("FLOAT", {"default": 0.6, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "確率: 時間帯": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "確率: 色味": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
+            },
+        }
+
+    RETURN_TYPES = ("STRING",)
+    FUNCTION = "generate"
+    CATEGORY = "Text/Wildcards"
+
+    def generate(self, seed, 最大文字数=80, 小文字化=True,
+                 確率_向き=0.6, 確率_時間帯=0.5, 確率_色味=0.5, **kwargs):
+        rng = rng_from_seed(seed)
+        style = pick(rng, STYLES) or "soft lighting"
+        direction = pick(rng, DIRECTIONS) if maybe(rng, 確率_向き) else None
+        time = pick(rng, TIMES) if maybe(rng, 確率_時間帯) else None
+        color = pick(rng, COLORS) if maybe(rng, 確率_色味) else None
+        tag = join_clean([time, color, style, direction], sep=", ")
+        tag = normalize(tag, 小文字化)
+        tag = limit_len(tag, 最大文字数)
+        return (tag,)
