@@ -187,17 +187,14 @@ _EXTERNAL_FILES: Dict[str, List[str]] = {
 
 def _load_lines(candidates: List[str]) -> List[str]:
     """候補ディレクトリから最初に見つかったファイルを読み込み、行配列で返す。"""
-    print(f"--- 外部ファイル読み込み試行: {candidates}") # ← 追加
     for d in _CANDIDATE_DIRS:
         for fn in candidates:
             p = d / fn
             if p.exists():
-                print(f"[読込成功] => {p}") # ← 追加
                 raw = p.read_text(encoding="utf-8", errors="ignore").splitlines()
                 # 基本は行ごとにフレーズとして保持（説明文っぽい長文も語彙として残す）
                 out = [ (s or "").strip() for s in raw if (s or "").strip() ]
                 return _dedupe(out)
-    print(f"[読込失敗] ファイルが見つかりません: {candidates}") # ← 追加
     return []
 
 # 外部語彙のロード（※露骨表現を含みうる。ここでは「保持」のみ）
@@ -271,9 +268,3 @@ __all__ = [
     # 出力側で使うブロック集合
     "EXPLICIT_BLOCKLIST",
 ]
-# vocab/pose_emotion_vocab.py の一番下に追加
-
-print("#################### EXPLICIT_BLOCKLIST Content ####################")
-# 中身をアルファベット順にソートして見やすくする
-print(sorted(list(EXPLICIT_BLOCKLIST)))
-print("#####################################################################")
