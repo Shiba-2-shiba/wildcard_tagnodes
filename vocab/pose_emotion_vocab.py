@@ -268,3 +268,54 @@ __all__ = [
     # 出力側で使うブロック集合
     "EXPLICIT_BLOCKLIST",
 ]
+
+# (ファイルの一番下、__all__ = [...] の後に追加)
+
+# ===== デバッグ用：語彙プールのJSON出力機能 (ここから追加) =====
+import json
+
+def _export_vocab_to_json():
+    """
+    デバッグ用に、最終的に構築された語彙プールをJSONファイルに出力する。
+    このスクリプトが読み込まれた際に一度だけ実行される。
+    """
+    # EXPLICIT_BLOCKLISTはset型なので、JSONで保存するためにソート済みリストに変換
+    blocklist_sorted = sorted(list(EXPLICIT_BLOCKLIST))
+
+    # 出力したいデータを一つの辞書にまとめる
+    vocab_data_to_export = {
+        "INFO": "This is an auto-generated file showing the final layout of NSFW-related vocabularies for debugging.",
+        "source_files_loaded": {
+            "description": "Raw words loaded from each external .txt file.",
+            "explicit_sex_poses": EXPLICIT_SEX_POSES,
+            "explicit_sex_lexicon": EXPLICIT_SEX_LEXICON,
+            "extra_erotic_poses": EXTRA_EROTIC_POSES,
+            "extra_action_poses": EXTRA_ACTION_POSES,
+            "extra_hand_gestures": EXTRA_HAND_GESTURES,
+        },
+        "combined_nsfw_pools": {
+            "description": "All suggestive and explicit words combined into pools used by the 'explicit' mode.",
+            "EXTRA_NSFW_POSE": EXTRA_NSFW_POSE,
+            "EXTRA_NSFW_EXPR": EXTRA_NSFW_EXPR,
+        },
+        "final_blocklist": {
+            "description": "These exact phrases and sub-words (auto-extracted, 8+ chars) will be REMOVED from the final output tag string.",
+            "count": len(blocklist_sorted),
+            "terms": blocklist_sorted,
+        }
+    }
+
+    # このスクリプトファイルと同じ階層にJSONを出力
+    output_path = Path(__file__).resolve().parent / "debug_nsfw_vocab_layout.json"
+
+    # JSONファイルに書き出し (UTF-8, 見やすいようにインデント付き)
+    try:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(vocab_data_to_export, f, indent=4, ensure_ascii=False)
+        # 成功したことをコンソールに表示（任意）
+        print(f"✅ [PoseEmotionTagNode] Successfully exported vocab layout to: {output_path}")
+    except Exception as e:
+        print(f"❌ [PoseEmotionTagNode] Failed to export vocab layout: {e}")
+
+# --- スクリプト読み込み時に上記関数を呼び出す ---
+_export_vocab_to_json()
