@@ -15,3 +15,9 @@ ComfyUI 向けのワイルドカードタグ生成ノード集です。服装や
 
 ## インストール
 このリポジトリを `ComfyUI/custom_nodes` に配置するだけで利用可能です。
+
+```bash
+cd Yourdirectory/ComfyUI/custom_nodes
+git clone https://github.com/Shiba-2-shiba/wildcard_tagnodes.git
+
+```
