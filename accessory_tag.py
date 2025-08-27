@@ -36,7 +36,7 @@ class AccessoryTagNode:
         if not parts:
             all_items = HEADWEAR + EYEWEAR + JEWELRY + HANDHELD
             parts.append(pick(rng, all_items))
-        tag = join_clean(parts, sep=", ")
+        tag = join_clean(parts)
         tag = normalize(tag, 小文字化)
         tag = limit_len(tag, 最大文字数)
         return (tag,)
