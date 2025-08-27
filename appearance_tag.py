@@ -63,7 +63,7 @@ def _compose_body(rng, p, L, sexy: bool) -> str:
     bust_nsfw = pick(rng, L["bust_nsfw"]) if sexy and bust and maybe(rng, p["p_bust_nsfw"]) else None
 
     parts = [base, detail, bust, bust_soft, bust_nsfw]
-    return ", ".join([x for x in parts if x])
+    return join_clean([x for x in parts if x])
 
 def _compose_hair(rng, p, L) -> str:
     # 色ミックス or 単色（排他）
@@ -173,3 +173,4 @@ class AppearanceTagNode:
         tag = normalize(tag, 小文字化)
         tag = limit_len(tag, 最大文字数)
         return (tag,)
+
