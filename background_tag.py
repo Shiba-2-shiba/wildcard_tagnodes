@@ -157,8 +157,9 @@ class BackgroundTagNode:
         if maybe(rng, 確率_建築_構造): parts.append(pick(rng, L["arch"]))
         if maybe(rng, 確率_小道具): parts.append(pick(rng, L["props"]))
 
-        tag = join_clean([p for p in parts if p], sep=", ")
+        tag = join_clean([p for p in parts if p])
         tag = normalize(tag, 小文字化)
         tag = limit_len(tag, 最大文字数)
         
         return (tag,)
+
