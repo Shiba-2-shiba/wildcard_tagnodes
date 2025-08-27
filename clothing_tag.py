@@ -58,19 +58,25 @@ def _compose(rng, p, L, erotic: bool, exposure_level: str) -> str:
     patt   = pick(rng, L["patterns"])   if maybe(rng, p["p_pattern"] * mul.get("pattern",1.0)) else None
     base   = pick(rng, L["bases_erotic"] if erotic else L["bases_non"]) or ("lingerie set" if erotic else "outfit set")
     if erotic and any(k in (base or "").lower() for k in ["blindfold","pasties","rope","handcuffs"]) and mater is None: mater = pick(rng, ["silk","satin","leather"])
-    head = join_clean([color, mater, patt, base], sep=" ")
-    tail: List[str] = []
-    if maybe(rng, p["p_style"] * mul.get("style",1.0)): tail.append(pick(rng, L["styles"]))
-    if maybe(rng, p["p_closure"]): tail.append(pick(rng, CLOSURES))
-    if maybe(rng, p["p_embellish"]): tail.append(pick(rng, L["embellish"]))
+    parts: List[str] = []
+
+    # headに相当する部分
+    core_parts = [color, mater, patt, base]
+    parts.append(join_clean(core_parts, sep=" ")) # ここはスペース区切りを維持
+
+    # tailに相当する部分
+    if maybe(rng, p["p_style"] * mul.get("style",1.0)): parts.append(pick(rng, L["styles"]))
+    if maybe(rng, p["p_closure"]): parts.append(pick(rng, CLOSURES))
+    if maybe(rng, p["p_embellish"]): parts.append(pick(rng, L["embellish"]))
     if erotic:
-        if maybe(rng, scaled(p["p_accent_core"])): tail.append(pick(rng, L["acc_erotic"]))
-        if reveal_pool and maybe(rng, mul.get("reveal",0.0)): tail.append(pick(rng, reveal_pool))
+        if maybe(rng, scaled(p["p_accent_core"])): parts.append(pick(rng, L["acc_erotic"]))
+        if reveal_pool and maybe(rng, mul.get("reveal",0.0)): parts.append(pick(rng, reveal_pool))
     else:
-        if maybe(rng, scaled(p["p_accent_core"])): tail.append(pick(rng, L["acc_non"]))
-        if reveal_pool and maybe(rng, mul.get("reveal",0.0) * 0.6): tail.append(pick(rng, REVEAL_MILD if exposure_level in ("mild","bold") else REVEAL_MILD))
-    tail = [t for t in tail if t]
-    return join_clean([head, ", ".join(tail)], sep=", ") if tail else head
+        if maybe(rng, scaled(p["p_accent_core"])): parts.append(pick(rng, L["acc_non"]))
+        if reveal_pool and maybe(rng, mul.get("reveal",0.0) * 0.6): parts.append(pick(rng, REVEAL_MILD if exposure_level in ("mild","bold") else REVEAL_MILD))
+    
+    # 最後にすべてのパーツをデフォルトのスペース区切りで結合する
+    return join_clean(parts)
 
 # ========================
 # 単出力版
@@ -134,3 +140,4 @@ class ClothingTagNode:
         tag = normalize(tag, 小文字化)
         tag = limit_len(tag, 最大文字数)
         return (tag,)
+
