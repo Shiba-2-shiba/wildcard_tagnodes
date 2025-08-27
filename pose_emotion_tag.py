@@ -148,9 +148,9 @@ def _compose(rng, Pp:Dict[str,float], Pe:Dict[str,float],
     expr_seq = [mouth, eyes, lid, gaze, brow, micro, blush, sweat, tear, mood]
 
     # サニタイズは結合直前に行う
-    pose_tag = join_clean(_sanitize(pose_seq), sep=", ")
-    expr_tag = join_clean(_sanitize(expr_seq), sep=", ")
-    return join_clean([pose_tag, expr_tag], sep=", ")
+    pose_tag = join_clean(_sanitize(pose_seq))
+    expr_tag = join_clean(_sanitize(expr_seq))
+    return join_clean([pose_tag, expr_tag])
 
 # ===== ComfyUIノードクラス =====
 class PoseEmotionTagNode:
@@ -236,4 +236,5 @@ class PoseEmotionTagNode:
         tag = _compose(rng, Pp, Pe, Lp, Le, face_safe, gaze_target, kwargs.get("見せたい部位","自動"), theme)
         tag = normalize(tag, lowercase)
         tag = limit_len(tag, max_len)
+
         return (tag,)
