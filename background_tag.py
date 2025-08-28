@@ -1,10 +1,5 @@
 # background_tag.py
-# clothing_tag.py の設計思想に合わせて改修
-# - 語彙を vocab/background_vocab.py に分離
-# - UIを日本語化し、ドロップダウンリストを実装
-# - テーマ選択をCSV形式から複数のドロップダウンに変更
-# - 不要な外部ファイル読み込み機能を削除
-# - [エラー修正] INPUT_TYPESのキーをPythonの引数名と完全に一致させた
+# 語彙の拡充と、排他的なタグのグループ化ロジックを追加
 
 from .util import (
     rng_from_seed, maybe, pick, join_clean, limit_len, normalize, merge_unique
@@ -12,7 +7,7 @@ from .util import (
 from .vocab.background_vocab import (
     BG_ENV_INDOOR, BG_ENV_OUTDOOR, BG_LIGHT, BG_DETAILS, BG_TEXTURE,
     BG_WEATHER, BG_TIME, BG_FX, BG_ARCH, BG_PROPS,
-    THEME_PACKS, THEME_CHOICES
+    THEME_PACKS, THEME_CHOICES, EXCLUSIVE_TAG_GROUPS
 )
 
 # ========================
@@ -31,8 +26,9 @@ ENV_MODE_MAP_JP = {
 
 def _apply_themes(base: dict, theme_keys: list) -> dict:
     """選択されたテーマをベースの語彙リストにマージする"""
+    # 既存のロジックは変更なし
     env_in, env_out = base["env_in"], base["env_out"]
-    light, details, texture, arch = base["light"], base["details"], base["texture"], base["arch"]
+    light, details, texture, arch, props = base["light"], base["details"], base["texture"], base["arch"], base["props"]
     
     for key in theme_keys:
         t = THEME_PACKS.get(key, {})
@@ -42,8 +38,9 @@ def _apply_themes(base: dict, theme_keys: list) -> dict:
         details = merge_unique(details, t.get("details", []))
         texture = merge_unique(texture, t.get("texture", []))
         arch    = merge_unique(arch,    t.get("arch", []))
+        props   = merge_unique(props,   t.get("props", []))
         
-    return dict(env_in=env_in, env_out=env_out, light=light, details=details, texture=texture, arch=arch)
+    return dict(env_in=env_in, env_out=env_out, light=light, details=details, texture=texture, arch=arch, props=props)
 
 
 def _prepare_lists(theme_keys: list) -> dict:
@@ -69,7 +66,6 @@ def _prepare_lists(theme_keys: list) -> dict:
 
     return base
 
-
 # ========================
 # ノード本体
 # ========================
@@ -87,7 +83,6 @@ class BackgroundTagNode:
                 "抽選モード": (list(ENV_MODE_MAP_JP.keys()),),
                 "最大文字数": ("INT", {"default": 140, "min": 0, "max": 4096}),
                 "小文字化": ("BOOL", {"default": True}),
-                # [エラー修正] UIの項目名（キー）を、generate関数の引数名と完全に一致させる
                 "確率_照明": ("FLOAT", {"default": 0.85, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "確率_詳細": ("FLOAT", {"default": 0.75, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "確率_質感": ("FLOAT", {"default": 0.65, "min": 0.0, "max": 1.0, "step": 0.01}),
@@ -114,17 +109,32 @@ class BackgroundTagNode:
             return [out or "simple outdoor scene"]
         if mode == "split_indoor_outdoor":
             parts = []
-            parts.append(ind or "simple indoor set")
-            parts.append(out or "simple outdoor scene")
-            return parts
+            if ind: parts.append(ind)
+            if out: parts.append(out)
+            return parts or ["simple backdrop"]
         
         if ind and out:
             chosen_env = ind if pick(rng, ["indoor", "outdoor"]) == "indoor" else out
         else:
             chosen_env = ind or out or "simple backdrop"
         return [chosen_env]
+    
+    def _get_exclusive_tags(self, rng, selected_tags: list) -> list:
+        """
+        選ばれたタグと排他的なグループに属するタグを返す
+        """
+        exclusive_tags = set()
+        for tag in selected_tags:
+            for group in EXCLUSIVE_TAG_GROUPS.values():
+                for sub_group in group:
+                    if tag in sub_group:
+                        # 選択されたタグと同じサブグループから他のタグを追加
+                        # これにより、同じグループ内の他の要素が選ばれるのを防ぐ
+                        for excl_tag in sub_group:
+                            if excl_tag != tag:
+                                exclusive_tags.add(excl_tag)
+        return list(exclusive_tags)
 
-    # [エラー修正] 引数名をINPUT_TYPESのキーと完全に一致させる
     def generate(
         self,
         seed,
@@ -148,6 +158,7 @@ class BackgroundTagNode:
         env_parts = self._pick_env(rng, L, env_mode_en)
         parts = list(env_parts)
 
+        # 確率に基づいて各カテゴリからタグを抽選
         if maybe(rng, 確率_照明): parts.append(pick(rng, L["light"]))
         if maybe(rng, 確率_詳細): parts.append(pick(rng, L["details"]))
         if maybe(rng, 確率_質感): parts.append(pick(rng, L["texture"]))
@@ -157,7 +168,33 @@ class BackgroundTagNode:
         if maybe(rng, 確率_建築_構造): parts.append(pick(rng, L["arch"]))
         if maybe(rng, 確率_小道具): parts.append(pick(rng, L["props"]))
 
-        tag = join_clean([p for p in parts if p], sep=", ")
+        # ここから排他的なタグを削除する新しいロジック
+        valid_parts = []
+        exclusive_tags_to_remove = set()
+        
+        # 抽選されたタグを順に処理
+        for p in parts:
+            if not p:
+                continue
+
+            # 既に排他的なタグとしてマークされていればスキップ
+            if p in exclusive_tags_to_remove:
+                continue
+            
+            # タグが排他的なグループに属しているかチェック
+            for group_name, exclusive_group in EXCLUSIVE_TAG_GROUPS.items():
+                for sub_group in exclusive_group:
+                    if p in sub_group:
+                        # 属していれば、そのサブグループ内の他のタグを削除リストに追加
+                        for tag_to_remove in sub_group:
+                            if tag_to_remove != p:
+                                exclusive_tags_to_remove.add(tag_to_remove)
+            
+            valid_parts.append(p)
+        
+        final_parts = [p for p in valid_parts if p not in exclusive_tags_to_remove]
+        
+        tag = join_clean(final_parts)
         tag = normalize(tag, 小文字化)
         tag = limit_len(tag, 最大文字数)
         
