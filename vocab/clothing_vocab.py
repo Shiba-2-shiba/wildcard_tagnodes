@@ -1,88 +1,225 @@
-# vocab.py
-# clothing_tagノードで使用する語彙リスト
+# clothing_vocab.py (v3 - 大幅拡張版)
+# カテゴリを細分化し、語彙を大幅に拡張したバージョン。
+# clothing_tag.pyの生成ロジックをこれに合わせて変更する必要があります。
 
 # ========================
-# コア語彙（共通）
+# 1. コア語彙 (色、素材、柄)
 # ========================
 COLORS = [
-    "black","white","ivory","cream","silver","gold","champagne",
-    "red","crimson","scarlet","wine","burgundy",
-    "pink","blush","rose","magenta",
-    "purple","lavender","violet","plum",
-    "blue","navy","cobalt","turquoise","teal",
-    "green","emerald","olive","mint",
-    "brown","chocolate","tan","beige",
-    "gray","charcoal","graphite","transparent","clear"
+    # Basic
+    "black", "white", "gray", "charcoal", "ivory", "cream", "beige", "khaki", "off-white", "jet black", "snow white",
+    # Red/Pink
+    "red", "crimson", "scarlet", "wine", "burgundy", "maroon", "pink", "hot pink", "fuchsia", "rose", "coral", "blush pink", "magenta",
+    # Blue
+    "blue", "navy blue", "royal blue", "sky blue", "cobalt", "cyan", "teal", "turquoise", "midnight blue", "baby blue", "periwinkle",
+    # Green
+    "green", "emerald", "olive", "forest green", "lime green", "mint green", "sage green", "jade", "seafoam green",
+    # Yellow/Orange
+    "yellow", "mustard", "gold", "orange", "apricot", "peach", "tangerine", "citrine",
+    # Purple
+    "purple", "violet", "lavender", "mauve", "plum", "indigo", "lilac", "amethyst",
+    # Brown
+    "brown", "chocolate", "tan", "caramel", "bronze", "coffee", "taupe",
+    # Metallic & Other
+    "silver", "gunmetal", "metallic", "rose gold", "platinum", "iridescent", "holographic", "transparent", "clear"
 ]
+
 MATERIALS = [
-    "lace","satin","silk","velvet","latex","PVC","mesh","tulle",
-    "chiffon","fishnet","leather","patent leather","faux leather",
-    "organza","ribbed knit","micro-mesh","crepe","linen","denim","wool blend","brocade"
+    # Natural Fibers
+    "cotton", "denim", "linen", "silk", "wool", "cashmere", "velvet", "leather", "suede", "corduroy", "hemp", "bamboo fabric",
+    # Synthetic Fibers
+    "polyester", "nylon", "spandex", "lycra", "rayon", "acrylic", "latex", "PVC", "vinyl", "faux leather", "neoprene",
+    # Sheer & Lace
+    "lace", "chantilly lace", "chiffon", "organza", "tulle", "mesh", "fishnet", "georgette", "see-through fabric", "gossamer",
+    # Knits
+    "knit", "ribbed knit", "cable knit", "fleece", "jersey", "chenille", "boucle",
+    # Others
+    "satin", "charmeuse", "brocade", "tweed", "sequin fabric", "faux fur", "terrycloth", "lamé", "jacquard", "crepe"
 ]
+
 PATTERNS = [
-    "floral","paisley","polka-dot","striped","zebra-print",
-    "leopard-print","snake-print","grid","herringbone",
-    "chevron","heart-pattern","checked","argyle","gingham","pinstripe","tartan"
+    # Classic
+    "solid", "striped", "vertical stripes", "horizontal stripes", "pinstripe", "polka-dot", "checked", "gingham", "tartan", "plaid", "checkered",
+    # Geometric
+    "argyle", "chevron", "herringbone", "houndstooth", "grid", "geometric-pattern", "diamond-pattern", "cubist-pattern",
+    # Floral & Nature
+    "floral", "botanical", "paisley", "leaf-print", "tropical-print", "rose-print", "cherry-blossom-print",
+    # Animal
+    "animal-print", "leopard-print", "zebra-print", "snake-print", "tiger-print", "cheetah-print", "crocodile-print",
+    # Abstract & Others
+    "abstract", "camouflage", "tie-dye", "gradient", "ombre", "star-pattern", "heart-pattern", "fair isle", "damask", "baroque", "cosmic-print", "ikat"
 ]
-STYLES = [
-    "halter","strapless","off-shoulder","one-shoulder",
-    "plunge neckline","sweetheart neckline","high-neck",
-    "open back","low-back","side-slit","thigh-slit",
-    "high-waist","low-rise","micro-length","wrap-front",
-    "lace-up front","lace-up sides","zip-back","buttoned front","asymmetric hem"
-]
-CLOSURES = [
-    "front lace-up","back lace-up","side zipper","back zipper",
-    "buckle straps","hook-and-eye","tie-back","snap closure"
-]
-EMBELLISH = [
-    "embroidery","sequins","pearls","crystals","studs","gems",
-    "bows","fringe","ribbons","ruffles","lace trim",
-    "scalloped edges","sheer panels","cutouts","piping","contrast piping"
-]
-BASES_EROTIC = [
-    "lace bra","lace panties","corset dress","corset top","pvc corset","leather corset",
-    "satin bustier","lace bodysuit","fishnet bodysuit","silk chemise","garter belt",
-    "latex mini dress","fishnet stockings","satin blindfold","nipple tassels","pasties",
-    "open-cup bra","strappy cage bra","micro bikini","crotchless panty","open-back thong",
-]
-ACCENTS_EROTIC = [
-    "with garter straps","with detachable garters","with attached stockings",
-    "with sheer gloves","with choker","with matching thong",
-    "with open-crotch","with open-cup","with peekaboo panels",
-    "with O-ring details","with metal rings","with chain accents",
-    "with harness straps","with lace-up sides","with cutout hips"
-]
-BASES_NONEROTIC = [
-    "A-line sundress","wrap dress","pleated skirt with blouse","tailored blazer set",
-    "silk camisole and cardigan","turtleneck knit and skirt","denim jacket and tee",
-    "linen jumpsuit","maxi dress with slit","shirt dress with belt",
-    "sweater and pleated midi","blazer and tailored trousers","crop top and high-waist jeans",
-]
-ACCENTS_NONEROTIC = [
-    "with waist belt","with matching cardigan","with scarf","with layered necklace",
-    "with tote bag","with ankle boots","with mary janes","with knee-high socks",
-]
-REVEAL_MILD = ["subtle sheer panels","keyhole cutout","low back"]
-REVEAL_BOLD = ["see-through panels","micro cutouts","high-leg cut","thong back","deep plunge"]
-REVEAL_EXPLICIT = ["open sides","sideboob cutouts","barely-there straps","ultra high-leg","backless micro"]
 
 # ========================
-# テーマパック
+# 2. 服の基本アイテム
+# ========================
+TOPS = [
+    "t-shirt", "graphic tee", "blouse", "crop top", "hoodie", "turtleneck sweater",
+    "off-the-shoulder top", "polo shirt", "henley shirt", "camisole", "tank top",
+    "button-down shirt", "flannel shirt", "cashmere knit", "v-neck sweater", "cardigan",
+    "sweatshirt", "tube top", "halter top", "peasant blouse", "tunic", "bustier top",
+    "corset top", "bodysuit", "bandeau top", "smocked top", "wrap top"
+]
+
+BOTTOMS = [
+    "jeans", "skinny jeans", "straight-leg jeans", "bootcut jeans", "ripped jeans", "flared jeans",
+    "cargo pants", "pleated skirt", "mini skirt", "maxi skirt", "pencil skirt", "A-line skirt",
+    "leggings", "biker shorts", "tailored trousers", "culottes", "denim shorts", "wide-leg pants",
+    "corduroy pants", "yoga pants", "capri pants", "hotpants", "skort", "hip-huggers", "palazzo pants"
+]
+
+OUTERWEAR = [
+    "denim jacket", "leather jacket", "biker jacket", "bomber jacket", "trench coat",
+    "wool coat", "blazer", "parka", "puffer jacket", "windbreaker", "vest", "bolero",
+    "duffle coat", "pea coat", "overcoat", "hooded jacket", "fleece jacket", "cape",
+    "moto jacket", "longline cardigan", "kimono jacket", "anorak"
+]
+
+DRESSES_SETS = [
+    "sundress", "A-line dress", "wrap dress", "pleated dress", "tailored blazer set",
+    "jumpsuit", "romper", "maxi dress", "shirt dress", "sweater dress", "sheath dress",
+    "blazer dress", "slip dress", "bodycon dress", "fit and flare dress", "babydoll dress",
+    "little black dress", "cocktail dress", "evening gown", "skirt and blouse set",
+    "two-piece set", "cutout dress", "qipao", "cheongsam", "kaftan"
+]
+
+LINGERIE = [
+    "lace bra", "lace panties", "corset", "pvc corset", "leather corset", "waspie",
+    "satin bustier", "lace bodysuit", "fishnet bodysuit", "silk chemise", "garter belt", "suspender belt",
+    "latex mini dress", "fishnet stockings", "thigh-high stockings", "satin blindfold", "nipple tassels", "pasties",
+    "open-cup bra", "shelf bra", "cupless bra", "strappy cage bra", "micro bikini", "crotchless panty", "open-back thong",
+    "lace teddy", "sheer bodysuit", "satin corset", "longline bralette", "underwire bra and thong set",
+    "babydoll", "g-string", "sheer kimono robe", "lace-trim yukata lingerie", "merry widow", "negligee"
+]
+
+# ========================
+# 3. 装飾・スタイル
+# ========================
+STYLES = [
+    # Necklines
+    "V-neck", "crew-neck", "scoop-neck", "boat-neck", "turtleneck", "high-neck", "halter", "sweetheart neckline", "plunge neckline", "cowl neck",
+    # Sleeves
+    "sleeveless", "short-sleeve", "long-sleeve", "cap-sleeve", "puffed-sleeve", "bell-sleeve", "raglan-sleeve", "kimono-sleeve", "bishop sleeve",
+    # Fit & Cut
+    "slim-fit", "loose-fit", "oversized", "A-line", "bodycon", "wrap-front", "peplum", "cropped", "high-waist", "low-rise", "empire waist", "draped", "ruched",
+    # Hems & Slits
+    "asymmetric hem", "high-low hem", "scalloped hem", "side-slit", "thigh-high slit", "front slit", "double slit",
+    # Backs
+    "open-back", "low-back", "lace-up back", "criss-cross back", "backless", "T-back",
+    # Others
+    "strapless", "one-shoulder", "off-the-shoulder", "cold-shoulder", "button-front", "zip-front", "underboob cutout", "cleavage cutout", "hip cutout"
+]
+
+EMBELLISH = [
+    # Trims & Edges
+    "lace trim", "ruffles", "frills", "fringe", "piping", "contrast trim", "scalloped edges", "feathers", "fur trim",
+    # Add-ons
+    "bows", "ribbons", "sequins", "pearls", "crystals", "rhinestones", "studs", "grommets", "beads", "metal hardware",
+    # Fabric Manipulation
+    "embroidery", "pleats", "pintucks", "smocking", "ruching", "quilting",
+    # Cutouts & Panels
+    "cutouts", "sheer panels", "mesh inserts", "lace panels", "slashed details",
+    # Fastenings (can be decorative)
+    "decorative buttons", "buckles", "zippers", "lace-up details", "hook-and-eye", "snap closure", "clasps",
+    # Others
+    "appliques", "patches", "tassels", "chain details", "body chains", "contrast stitching", "epaulettes"
+]
+
+# ========================
+# 4. 露出表現・セクシー系アクセント
+# ========================
+ACCENTS_EROTIC = [
+    "with garter straps", "with detachable garters", "with attached stockings",
+    "with sheer gloves", "with a delicate choker", "with matching thong", "with lace-up back",
+    "with open-crotch design", "with open-cup features", "with peekaboo panels", "with keyhole opening",
+    "with O-ring details", "with metal rings", "with chain accents", "with delicate body chains",
+    "with harness straps", "with bondage-style straps", "with lace-up sides", "with cutout hips", "with a plunging back",
+    "held together by thin straps", "with strategic cutouts", "accented with pearls"
+]
+
+REVEAL_MILD = [
+    "subtle sheer panels", "keyhole cutout", "low back", "shoulder cutouts", "back keyhole",
+    "sheer sleeves", "a hint of sideboob", "modest cleavage", "slit on the leg", "off-shoulder revealing collarbones"
+]
+REVEAL_BOLD = [
+    "see-through panels", "micro cutouts", "high-leg cut", "thong back", "deep plunge neckline",
+    "cleavage window", "sideboob cutout", "underboob cutout", "hip cutouts", "backless design",
+    "extremely short hemline", "navel cutout", "daringly high slit"
+]
+REVEAL_EXPLICIT = [
+    "open sides", "sideboob cutouts", "barely-there straps", "ultra high-leg", "backless micro dress",
+    "fully transparent", "cupless design", "crotchless design", "held by a single thread", "wardrobe malfunction",
+    "nipple cutout", "completely sheer", "strategically placed rips", "unzipped front"
+]
+
+# ========================
+# 5. 排他グループ
+# ========================
+EXCLUSIVE_GROUPS = {
+    "season": {
+        "summer": ["sundress", "linen", "bikini", "romper", "denim shorts", "tank top"],
+        "winter": ["wool coat", "turtleneck sweater", "puffer jacket", "fleece", "cashmere knit", "corduroy"]
+    },
+    "garment_slot": {
+        "full_body": DRESSES_SETS,
+        "tops": TOPS,
+        "bottoms": BOTTOMS
+    }
+}
+
+# ========================
+# 6. テーマパック (新しいカテゴリ構造に合わせて更新)
 # ========================
 THEMES = {
-    "lingerie": {"bases_erotic": ["lace teddy","sheer bodysuit","satin corset","longline bralette","underwire bra and thong set","babydoll set","g-string set",],"accents_erotic": ["with garter belt","with lace thigh-highs","with silk robe"],"materials": ["mesh","silk","satin","lace","tulle"],},
-    "erotic_boost": {"bases_erotic": ["latex corset","pasties and thong","open-cup corset","strappy bondage set"],"accents_erotic": ["with collar and leash","with handcuffs","with harness"],"materials": ["latex","PVC","leather"],},
-    "dresses": {"bases_non": ["little black dress","wrap-front midi dress","fit and flare dress","slip dress with lace trim","shirt dress","pleated A-line dress","one-shoulder bodycon dress",],"patterns": ["polka-dot","floral","geometric"],"styles": ["off-shoulder","halter","sweetheart neckline"],},
-    "swimsuits": {"bases_erotic": ["triangle string bikini","high-cut monokini","plunging one-piece","lace-up two-piece"],"bases_non": ["sporty zip-front rash guard set","retro high-waist bikini"],"accents_erotic": ["with sheer mesh inserts","with cut-out sides"],"materials": ["ribbed knit","mesh"],},
-    "sets": {"bases_non": ["pleated skirt and blouse set","paperbag pants with ribbed knit top","peplum blazer and pencil skirt","cargo pants and tank top","jumpsuit set",]},
-    "tops": {"bases_non": ["corset top with high-waist trousers","halter neck top with maxi skirt","wrap-front blouse with culottes","kimono top with jeans",],"styles": ["lace-up front","off-shoulder","asymmetrical hem","wrap-front"],},
-    "fantasy": {"bases_non": ["elven-inspired gown","sorceress robe","steampunk corset with skirt"],"accents_non": ["with embroidered runes","with feathered cape","with jeweled tiara"],"materials": ["velvet","brocade","metallic fabric"],"patterns": ["celestial","scale-like"],},
-    "christmas": {"bases_non": ["red sweater and plaid skirt","velvet green dress","fair isle sweater dress"],"accents_non": ["with faux fur trim","with santa hat","with reindeer motif"],"patterns": ["plaid","candy-cane stripe","snowflake"],"materials": ["velvet","knit"],},
-    "wasou": {"bases_non": ["yukata with obi sash","kimono-style wrap dress","hakama skirt set","haori over camisole"],"bases_erotic": ["sheer kimono robe","lace-trim yukata lingerie","obi belt with satin chemise"],"accents_non": ["with obi-jime cord","with sensu fan","with tabi socks"],"accents_erotic": ["with silk obi loosely tied","with sheer juban layer"],"materials": ["silk","satin","washi-like weave"],"patterns": ["sakura","asanoha","seigaiha","kikkō"],"styles": ["kimono sleeves","overlapping front"],},
-    "uniform": {"bases_non": ["sailor blouse and pleated skirt","blazer uniform set","shirt and tie with skirt"],"bases_erotic": ["cropped sailor top and micro skirt","tight shirt with ultra mini skirt"],"accents_non": ["with ribbon tie","with knee-high socks","with loafers"],"accents_erotic": ["with unbuttoned top","with loosened tie"],"patterns": ["pinstripe","plaid"],"materials": ["poly-blend","knit"],},
-    "street": {"bases_non": ["oversized hoodie with biker shorts","crop hoodie and cargo pants","denim jacket and graphic tee","bomber jacket and mini skirt","tracksuit set"],"bases_erotic": ["mesh crop top and micro shorts","strap bralette and low-rise cargo"],"accents_non": ["with baseball cap","with chunky sneakers","with crossbody bag"],"materials": ["denim","mesh","ribbed knit"],"styles": ["low-rise","cropped","asymmetric hem"],},
-    "business": {"bases_non": ["tailored blazer with pencil skirt","pinstripe suit set","silk blouse with high-waist trousers"],"bases_erotic": ["deep-plunge blazer dress","sheer blouse with bra top"],"accents_non": ["with leather tote","with pumps","with thin belt"],"patterns": ["pinstripe","herringbone"],"materials": ["wool blend","silk"],"styles": ["wrap-front","structured shoulders"],},
-    "gothic": {"bases_non": ["velvet corset with long skirt","lace blouse and tiered skirt","victorian goth dress"],"bases_erotic": ["sheer lace gothic bodysuit","latex corset with mesh skirt"],"accents_non": ["with choker","with lace gloves","with fishnet tights"],"materials": ["velvet","lace","leather"],"patterns": ["brocade","cross motifs"],"styles": ["high-neck","bell sleeves"],},
-    "lolita": {"bases_non": ["sweet lolita dress","classic lolita set","gothic lolita OP"],"bases_erotic": ["mini puff-sleeve babydoll","sheer apron lolita"],"accents_non": ["with petticoat","with headdress","with ribbon bows"],"materials": ["cotton","lace","organza"],"patterns": ["polka-dot","rose bouquet","gingham"],"styles": ["peter pan collar","ruffled hem"],},
+    "street": {
+        "tops": ["oversized hoodie", "graphic tee", "crop top"],
+        "outerwear": ["bomber jacket", "denim jacket", "windbreaker"],
+        "bottoms": ["cargo pants", "biker shorts", "ripped jeans"],
+        "materials": ["denim", "mesh", "fleece"],
+        "styles": ["low-rise", "cropped", "oversized"],
+    },
+    "business": {
+        "tops": ["silk blouse", "button-down shirt"],
+        "outerwear": ["tailored blazer", "trench coat"],
+        "bottoms": ["pencil skirt", "high-waist trousers"],
+        "dresses_sets": ["pinstripe suit set", "blazer dress"],
+        "patterns": ["pinstripe", "herringbone"],
+        "materials": ["wool", "silk"],
+        "styles": ["wrap-front", "slim-fit"],
+    },
+    "gothic": {
+        "tops": ["lace blouse", "corset top", "velvet top"],
+        "outerwear": ["velvet coat", "victorian style jacket"],
+        "bottoms": ["long tiered skirt", "leather pants"],
+        "dresses_sets": ["victorian goth dress", "velvet corset dress"],
+        "materials": ["velvet", "lace", "leather", "brocade"],
+        "patterns": ["damask", "cross motifs"],
+        "styles": ["high-neck", "bell-sleeves", "lace-up details"],
+    },
+    "wasou": {
+        "dresses_sets": ["yukata", "kimono", "hakama skirt set", "haori over camisole"],
+        "lingerie": ["sheer kimono robe", "lace-trim yukata lingerie"],
+        "materials": ["silk", "satin", "cotton"],
+        "patterns": ["sakura", "asanoha", "seigaiha", "kikko", "floral"],
+        "styles": ["kimono-sleeve", "wrap-front"],
+    },
+    "fantasy": {
+        "dresses_sets": ["elven-inspired gown", "sorceress robe", "steampunk corset with skirt", "fairy dress"],
+        "embellish": ["embroidered runes", "feathered cape", "jeweled details", "glowing patterns"],
+        "materials": ["velvet", "brocade", "metallic fabric", "gossamer"],
+        "patterns": ["celestial", "scale-like"],
+    },
+    "cyberpunk": {
+        "tops": ["techwear crop top", "holographic tank top"],
+        "outerwear": ["bomber jacket with LED", "transparent vinyl jacket"],
+        "bottoms": ["cargo pants with straps", "techwear shorts"],
+        "materials": ["PVC", "nylon", "holographic", "neoprene"],
+        "embellish": ["buckles", "straps", "glowing piping", "cybernetic patterns"],
+    },
+    "swimsuits": {
+        "lingerie": ["triangle string bikini", "high-cut monokini", "plunging one-piece", "lace-up two-piece", "bandeau bikini", "underwire bikini"],
+        "dresses_sets": ["sporty zip-front rash guard set", "retro high-waist bikini"],
+        "embellish": ["sheer mesh inserts", "cut-out sides", "O-ring details"],
+        "materials": ["ribbed knit", "mesh", "spandex", "neoprene"],
+    }
 }
