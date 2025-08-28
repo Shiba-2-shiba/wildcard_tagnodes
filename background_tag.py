@@ -1,10 +1,5 @@
 # background_tag.py
-# clothing_tag.py の設計思想に合わせて改修
-# - 語彙を vocab/background_vocab.py に分離
-# - UIを日本語化し、ドロップダウンリストを実装
-# - テーマ選択をCSV形式から複数のドロップダウンに変更
-# - 不要な外部ファイル読み込み機能を削除
-# - [エラー修正] INPUT_TYPESのキーをPythonの引数名と完全に一致させた
+# 語彙の拡充、排他的なタグのグループ化、そして文字数を最大まで活用するロジックを追加
 
 from .util import (
     rng_from_seed, maybe, pick, join_clean, limit_len, normalize, merge_unique
@@ -12,7 +7,7 @@ from .util import (
 from .vocab.background_vocab import (
     BG_ENV_INDOOR, BG_ENV_OUTDOOR, BG_LIGHT, BG_DETAILS, BG_TEXTURE,
     BG_WEATHER, BG_TIME, BG_FX, BG_ARCH, BG_PROPS,
-    THEME_PACKS, THEME_CHOICES
+    THEME_PACKS, THEME_CHOICES, EXCLUSIVE_TAG_GROUPS
 )
 
 # ========================
@@ -32,7 +27,7 @@ ENV_MODE_MAP_JP = {
 def _apply_themes(base: dict, theme_keys: list) -> dict:
     """選択されたテーマをベースの語彙リストにマージする"""
     env_in, env_out = base["env_in"], base["env_out"]
-    light, details, texture, arch = base["light"], base["details"], base["texture"], base["arch"]
+    light, details, texture, arch, props = base["light"], base["details"], base["texture"], base["arch"], base["props"]
     
     for key in theme_keys:
         t = THEME_PACKS.get(key, {})
@@ -42,8 +37,9 @@ def _apply_themes(base: dict, theme_keys: list) -> dict:
         details = merge_unique(details, t.get("details", []))
         texture = merge_unique(texture, t.get("texture", []))
         arch    = merge_unique(arch,    t.get("arch", []))
+        props   = merge_unique(props,   t.get("props", []))
         
-    return dict(env_in=env_in, env_out=env_out, light=light, details=details, texture=texture, arch=arch)
+    return dict(env_in=env_in, env_out=env_out, light=light, details=details, texture=texture, arch=arch, props=props)
 
 
 def _prepare_lists(theme_keys: list) -> dict:
@@ -69,7 +65,6 @@ def _prepare_lists(theme_keys: list) -> dict:
 
     return base
 
-
 # ========================
 # ノード本体
 # ========================
@@ -87,7 +82,6 @@ class BackgroundTagNode:
                 "抽選モード": (list(ENV_MODE_MAP_JP.keys()),),
                 "最大文字数": ("INT", {"default": 140, "min": 0, "max": 4096}),
                 "小文字化": ("BOOL", {"default": True}),
-                # [エラー修正] UIの項目名（キー）を、generate関数の引数名と完全に一致させる
                 "確率_照明": ("FLOAT", {"default": 0.85, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "確率_詳細": ("FLOAT", {"default": 0.75, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "確率_質感": ("FLOAT", {"default": 0.65, "min": 0.0, "max": 1.0, "step": 0.01}),
@@ -114,17 +108,30 @@ class BackgroundTagNode:
             return [out or "simple outdoor scene"]
         if mode == "split_indoor_outdoor":
             parts = []
-            parts.append(ind or "simple indoor set")
-            parts.append(out or "simple outdoor scene")
-            return parts
+            if ind: parts.append(ind)
+            if out: parts.append(out)
+            return parts or ["simple backdrop"]
         
         if ind and out:
             chosen_env = ind if pick(rng, ["indoor", "outdoor"]) == "indoor" else out
         else:
             chosen_env = ind or out or "simple backdrop"
         return [chosen_env]
+    
+    def _get_exclusive_tags(self, rng, selected_tags: list) -> list:
+        """
+        選ばれたタグと排他的なグループに属するタグを返す
+        """
+        exclusive_tags = set()
+        for tag in selected_tags:
+            for group in EXCLUSIVE_TAG_GROUPS.values():
+                for sub_group in group:
+                    if tag in sub_group:
+                        for excl_tag in sub_group:
+                            if excl_tag != tag:
+                                exclusive_tags.add(excl_tag)
+        return list(exclusive_tags)
 
-    # [エラー修正] 引数名をINPUT_TYPESのキーと完全に一致させる
     def generate(
         self,
         seed,
@@ -146,20 +153,72 @@ class BackgroundTagNode:
         L = _prepare_lists(theme_keys)
 
         env_parts = self._pick_env(rng, L, env_mode_en)
+        
+        # 抽選するカテゴリとその確率のリストを定義
+        weighted_categories = [
+            ("light", 確率_照明, L["light"]),
+            ("details", 確率_詳細, L["details"]),
+            ("texture", 確率_質感, L["texture"]),
+            ("weather", 確率_天候_季節, L["weather"]),
+            ("time", 確率_時間帯, L["time"]),
+            ("fx", 確率_効果_演出, L["fx"]),
+            ("arch", 確率_建築_構造, L["arch"]),
+            ("props", 確率_小道具, L["props"]),
+        ]
+        
+        # ランダムな順序でカテゴリをシャッフル
+        rng.shuffle(weighted_categories)
+
         parts = list(env_parts)
+        exclusive_tags_to_remove = set()
+        
+        # 初期タグの排他的なタグを削除リストに追加
+        for p in parts:
+            if p:
+                exclusive_tags_to_remove.update(self._get_exclusive_tags(rng, [p]))
 
-        if maybe(rng, 確率_照明): parts.append(pick(rng, L["light"]))
-        if maybe(rng, 確率_詳細): parts.append(pick(rng, L["details"]))
-        if maybe(rng, 確率_質感): parts.append(pick(rng, L["texture"]))
-        if maybe(rng, 確率_天候_季節): parts.append(pick(rng, L["weather"]))
-        if maybe(rng, 確率_時間帯): parts.append(pick(rng, L["time"]))
-        if maybe(rng, 確率_効果_演出): parts.append(pick(rng, L["fx"]))
-        if maybe(rng, 確率_建築_構造): parts.append(pick(rng, L["arch"]))
-        if maybe(rng, 確率_小道具): parts.append(pick(rng, L["props"]))
+        # 1. 確率に基づいたタグの抽選
+        tags_to_add = []
+        for category_name, probability, vocab_list in weighted_categories:
+            if not vocab_list:
+                continue
+            
+            if maybe(rng, probability):
+                selected_tag = pick(rng, vocab_list)
+                if selected_tag and selected_tag not in exclusive_tags_to_remove:
+                    tags_to_add.append(selected_tag)
+                    # 排他的なタグを削除リストに追加
+                    exclusive_tags_to_remove.update(self._get_exclusive_tags(rng, [selected_tag]))
 
-        tag = join_clean([p for p in parts if p])
+        # 抽選されたタグを追加
+        parts.extend(tags_to_add)
+
+        # 2. 最大文字数に達するまでタグを追加
+        all_categories = [
+            L["light"], L["details"], L["texture"], L["weather"],
+            L["time"], L["fx"], L["arch"], L["props"]
+        ]
+        
+        flat_list = [item for sublist in all_categories for item in sublist]
+        rng.shuffle(flat_list) # タグ全体をシャッフル
+
+        for selected_tag in flat_list:
+            if selected_tag and selected_tag not in parts and selected_tag not in exclusive_tags_to_remove:
+                # タグを追加する前に文字数制限をチェック
+                current_length = len(join_clean(parts))
+                # +2はカンマとスペース
+                if current_length + len(selected_tag) + 2 <= 最大文字数:
+                    parts.append(selected_tag)
+                    # 新しいタグの排他的なタグを削除リストに追加
+                    exclusive_tags_to_remove.update(self._get_exclusive_tags(rng, [selected_tag]))
+                else:
+                    # 文字数制限を超えたら終了
+                    break
+
+        # 最終的なプロンプトの構築
+        final_parts = [p for p in parts if p and p not in exclusive_tags_to_remove]
+        
+        tag = join_clean(final_parts)
         tag = normalize(tag, 小文字化)
-        tag = limit_len(tag, 最大文字数)
         
         return (tag,)
-
