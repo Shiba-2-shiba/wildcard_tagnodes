@@ -1,18 +1,18 @@
-# clothing_tag.py (v5 - 状態・新テーマ対応版)
-# - 「服装の状態」カテゴリを低確率で追加するロジックを実装
-# - 新しいテーマパックに対応
+# clothing_tag.py (v6 - 露出度選択・文字数調整強化版)
+# - UIから露出度を選択可能に
+# - 文字数上限まで積極的にタグを追加するロジックに強化
 
 import random
 from typing import List, Optional, Dict, Set
 from .util import (
     rng_from_seed, maybe, pick, join_clean, limit_len, normalize, merge_unique
 )
-# [修正] 新しい語彙定義をインポート
+# [修正なし] 語彙定義をインポート
 from .vocab.clothing_vocab import (
     COLORS, MATERIALS, PATTERNS, STYLES, EMBELLISH,
     TOPS, BOTTOMS, OUTERWEAR, DRESSES_SETS, LINGERIE,
     ACCENTS_EROTIC, REVEAL_MILD, REVEAL_BOLD, REVEAL_EXPLICIT,
-    STATES, # [追加]
+    STATES,
     THEMES, EXCLUSIVE_GROUPS
 )
 
@@ -20,7 +20,8 @@ from .vocab.clothing_vocab import (
 # UI日本語化のための定義
 # ========================
 MODE_MAP_JP = {"一般": "non_erotic", "セクシー": "erotic"}
-EXPOSURE_MAP_JP = {"控えめ": "modest", "普通": "mild", "大胆": "bold", "過激": "explicit"}
+# [修正] 露出度の選択肢を更新
+EXPOSURE_MAP_JP = {"なし": "none", "マイルド": "mild", "大胆": "bold", "過激": "explicit"}
 THEME_CHOICES = ["none"] + sorted(list(THEMES.keys()))
 
 # ========================
@@ -51,16 +52,29 @@ def _prepare_lists(theme_keys: List[str]) -> Dict[str, List[str]]:
         "outerwear": OUTERWEAR, "dresses_sets": DRESSES_SETS, "lingerie": LINGERIE,
         "accents_erotic": ACCENTS_EROTIC, "reveal_mild": REVEAL_MILD,
         "reveal_bold": REVEAL_BOLD, "reveal_explicit": REVEAL_EXPLICIT,
-        "states": STATES # [追加]
+        "states": STATES
     }
     if theme_keys:
         base = _apply_themes(base, theme_keys)
     return base
 
+def _get_exposure_profile(level: str, erotic: bool, L: Dict[str, List[str]]) -> (List[str], float):
+    """露出度設定に応じたタグのプールと確率を返す"""
+    level = (level or "none").lower()
+    pool, prob = [], 0.0
+    if erotic:
+        if level == "mild":     pool, prob = L["reveal_mild"], 0.5
+        elif level == "bold":   pool, prob = L["reveal_mild"] + L["reveal_bold"], 0.75
+        elif level == "explicit": pool, prob = L["reveal_bold"] + L["reveal_explicit"], 0.9
+    else: # non-erotic
+        if level == "mild":     pool, prob = L["reveal_mild"], 0.3
+        elif level == "bold":   pool, prob = L["reveal_mild"] + L["reveal_bold"], 0.5
+    return pool, prob
+
 # ========================
 # 生成ロジック
 # ========================
-def _compose(rng: random.Random, L: Dict[str, List[str]], erotic: bool, max_len: int) -> str:
+def _compose(rng: random.Random, L: Dict[str, List[str]], erotic: bool, exposure_level: str, max_len: int) -> str:
     # --- ステージ1: 基本的な服装の組み合わせを決定 ---
     base_tags = []
     selected_categories = set()
@@ -92,27 +106,40 @@ def _compose(rng: random.Random, L: Dict[str, List[str]], erotic: bool, max_len:
     add_tag_if_not_exclusive("styles", 0.6)
     add_tag_if_not_exclusive("embellish", 0.5)
     if erotic: add_tag_if_not_exclusive("accents_erotic", 0.6)
-
-    # --- ステージ3: 文字数調整 ---
-    current_prompt = join_clean(all_tags)
-    if len(current_prompt) < max_len / 2:
-        remaining_categories = ["styles", "embellish", "materials", "patterns", "colors"]
-        if erotic: remaining_categories.append("accents_erotic")
-        rng.shuffle(remaining_categories)
-        for category in remaining_categories:
-            if len(join_clean(all_tags)) >= max_len: break
-            if category not in selected_categories:
-                 available_tags = [t for t in L[category] if t not in exclusive_tags]
-                 if available_tags:
-                    tag = pick(rng, available_tags)
-                    all_tags.append(tag)
-                    exclusive_tags.update(_get_exclusive_tags(tag))
     
-    # --- [追加] ステージ4: 服装の状態を低確率で追加 ---
-    if maybe(rng, 0.2): # 20%の確率で状態を追加
+    # --- ステージ3: 露出表現の追加 ---
+    exposure_pool, exposure_prob = _get_exposure_profile(exposure_level, erotic, L)
+    if exposure_pool and maybe(rng, exposure_prob):
+        tag = pick(rng, exposure_pool)
+        if tag not in exclusive_tags:
+            all_tags.append(tag)
+
+    # --- ステージ4: 服装の状態を低確率で追加 ---
+    if maybe(rng, 0.2):
         available_states = [s for s in L["states"] if s not in exclusive_tags]
-        if available_states:
-            all_tags.append(pick(rng, available_states))
+        if available_states: all_tags.append(pick(rng, available_states))
+
+    # --- [強化] ステージ5: 文字数調整 ---
+    supplementary_categories = ["styles", "embellish", "materials", "patterns", "colors"]
+    if erotic: supplementary_categories.append("accents_erotic")
+    
+    # 文字数が最大値に近づくまでタグを追加し続ける
+    while len(join_clean(all_tags)) < max_len and supplementary_categories:
+        category_to_add = rng.choice(supplementary_categories)
+        available_tags = [t for t in L[category_to_add] if t not in exclusive_tags and t not in all_tags]
+        
+        if available_tags:
+            tag = pick(rng, available_tags)
+            # 追加しても文字数を超えない場合のみ追加
+            if len(join_clean(all_tags + [tag])) <= max_len:
+                all_tags.append(tag)
+                exclusive_tags.update(_get_exclusive_tags(tag))
+            else:
+                # このタグを追加すると長すぎるので、このカテゴリは一旦試行済みとする
+                supplementary_categories.remove(category_to_add)
+        else:
+            # このカテゴリには追加できるタグがないのでリストから削除
+            supplementary_categories.remove(category_to_add)
 
     return join_clean(all_tags)
 
@@ -126,6 +153,7 @@ class ClothingTagNode:
             "required": {
                 "seed": ("INT", {"default": 42, "min": 0, "max": 2**31-1}),
                 "モード": (list(MODE_MAP_JP.keys()),),
+                "露出度": (list(EXPOSURE_MAP_JP.keys()), {"default": "マイルド"}), # [修正]
                 "最大文字数": ("INT", {"default": 150, "min": 30, "max": 4096}),
             },
             "optional": {
@@ -138,12 +166,18 @@ class ClothingTagNode:
     FUNCTION = "generate"
     CATEGORY = "Text/Wildcards"
 
-    def generate(self, seed, モード, 最大文字数, テーマ1="none", テーマ2="none", テーマ3="none", 小文字化=True, **kwargs):
+    def generate(self, seed, モード, 露出度, 最大文字数, テーマ1="none", テーマ2="none", テーマ3="none", 小文字化=True, **kwargs):
         rng = rng_from_seed(seed)
         mode_en = MODE_MAP_JP.get(モード, "non_erotic")
+        exposure_en = EXPOSURE_MAP_JP.get(露出度, "none") # [修正]
+        
         theme_keys = [k for k in [テーマ1, テーマ2, テーマ3] if k and k != "none"]
         L = _prepare_lists(theme_keys)
-        tag = _compose(rng, L, erotic=(mode_en=="erotic"), max_len=最大文字数)
+        
+        tag = _compose(rng, L, erotic=(mode_en=="erotic"), exposure_level=exposure_en, max_len=最大文字数)
+        
         tag = normalize(tag, 小文字化)
+        # 最終的な文字数制限は念のため残す
         tag = limit_len(tag, 最大文字数)
+        
         return (tag,)
