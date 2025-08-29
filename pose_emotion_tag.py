@@ -50,13 +50,20 @@ def _complexity_profile(level: str) -> Dict[str, float]:
 # ===== 語彙プール準備関数 =====
 # [新規] NSFWレベルに応じて語彙プールを拡張する
 def _get_vocab_pools(nsfw_level: str) -> Dict[str, List[str]]:
+    # pose_emotion_vocab.py に EXPLICIT_SEX_POSES と EXPLICIT_SEX_LEXICON が存在しない可能性への対応
+    try:
+        from .vocab.pose_emotion_vocab import EXPLICIT_SEX_POSES, EXPLICIT_SEX_LEXICON
+    except ImportError:
+        EXPLICIT_SEX_POSES = []
+        EXPLICIT_SEX_LEXICON = []
+        
     pools = {
-        "view": _merge_unique(VIEW_ANGLES, VIEW_FRAMING),
+        "view": merge_unique(VIEW_ANGLES, VIEW_FRAMING),
         "pose_standing": POSE_STANDING[:],
         "pose_sitting": POSE_SITTING[:],
         "pose_lying": POSE_LYING[:],
         "pose_dynamic": POSE_DYNAMIC[:],
-        "upper_body": _merge_unique(HAND_POSITIONS, HAND_GESTURES, SPINE_AND_SHOULDERS),
+        "upper_body": merge_unique(HAND_POSITIONS, HAND_GESTURES, SPINE_AND_SHOULDERS),
         "lower_body": LEG_POSITIONS[:],
         "mouth": MOUTH_BASE[:],
         "eyes": EYES_BASE[:],
@@ -204,7 +211,7 @@ def _compose(rng, probs: Dict[str, float], pools: Dict[str, List[str]],
         chosen_tags.append(pick(rng, pools["effects"]))
 
     # 最終的なサニタイズと結合
-    unique_tags = merge_unique(chosen_tags)
+    unique_tags = merge_unique(*[chosen_tags])
     sanitized_tags = _sanitize(unique_tags)
     return join_clean(sanitized_tags)
 
@@ -239,17 +246,20 @@ class PoseEmotionTagNode:
     FUNCTION = "generate"
     CATEGORY = "tagging"
 
-    def generate(self, seed, **kwargs):
+    # [修正] generate関数のシグネチャ（引数の定義）をINPUT_TYPESのrequiredに合わせる
+    def generate(self, seed, 表情モード, 構図の複雑さ, アダルト表現, テーマ, 視線ターゲット, 最大文字数, 小文字化, **kwargs):
         rng = rng_from_seed(seed)
-        expr_mode = EXPR_MODE_JP.get(kwargs.get("表情モード", "日常"), "daily")
-        complexity = COMPLEXITY_JP.get(kwargs.get("構図の複雑さ", "標準"), "normal")
-        nsfw_level = NSFW_JP.get(kwargs.get("アダルト表現", "オフ"), "off")
-        theme = THEME_PACK_JP.get(kwargs.get("テーマ", "なし"), "none")
-        gaze_target = kwargs.get("視線ターゲット", "自動")
-        max_len = int(kwargs.get("最大文字数", 160))
-        lowercase = bool(kwargs.get("小文字化", True))
+        
+        # [修正] kwargs.get()ではなく、直接引数を使用する
+        expr_mode = EXPR_MODE_JP.get(表情モード, "daily")
+        complexity = COMPLEXITY_JP.get(構図の複雑さ, "normal")
+        nsfw_level = NSFW_JP.get(アダルト表現, "off")
+        theme = THEME_PACK_JP.get(テーマ, "none")
+        gaze_target = 視線ターゲット
+        max_len = int(最大文字数)
+        lowercase = bool(小文字化)
 
-        # 確率プロファイルとUIからの倍率を適用
+        # 確率プロファイルとUIからの倍率を適用 (optionalな項目はkwargsから取得)
         base_probs = _complexity_profile(complexity)
         probs = {
             "full_body":  base_probs["full_body"]  * kwargs.get("確率: 全身ポーズ", 1.0),
@@ -269,3 +279,4 @@ class PoseEmotionTagNode:
         tag = limit_len(tag, max_len)
 
         return (tag,)
+
