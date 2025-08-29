@@ -223,17 +223,14 @@ class PoseEmotionTagNode:
         return {
             "required": {
                 "seed": ("INT", {"default": 42, "min": 0, "max": 2**31 - 1}),
-                # [更新] UI項目を刷新
                 "表情モード": (list(EXPR_MODE_JP.keys()), {"default": "日常"}),
                 "構図の複雑さ": (list(COMPLEXITY_JP.keys()), {"default": "標準"}),
                 "アダルト表現": (list(NSFW_JP.keys()), {"default": "オフ"}),
                 "テーマ": (list(THEME_PACK_JP.keys()), {"default": "なし"}),
                 "視線ターゲット": (["自動", "looking at viewer", "looking away", "looking up", "downcast gaze", "side glance", "closed"], {"default": "自動"}),
                 "最大文字数": ("INT", {"default": 160, "min": 0, "max": 4096}),
-                "小文字化": ("BOOL", {"default": True}),
             },
             "optional": {
-                # [更新] 確率スライダーをカテゴリベースに集約
                 "確率: 全身ポーズ": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05}),
                 "確率: 上半身": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05}),
                 "確率: 下半身": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05}),
@@ -246,18 +243,18 @@ class PoseEmotionTagNode:
     FUNCTION = "generate"
     CATEGORY = "tagging"
 
-    # [修正] generate関数のシグネチャ（引数の定義）をINPUT_TYPESのrequiredに合わせる
-    def generate(self, seed, 表情モード, 構図の複雑さ, アダルト表現, テーマ, 視線ターゲット, 最大文字数, 小文字化, **kwargs):
+    # [修正] generate関数のシグネチャから「小文字化」を削除
+    def generate(self, seed, 表情モード, 構図の複雑さ, アダルト表現, テーマ, 視線ターゲット, 最大文字数, **kwargs):
         rng = rng_from_seed(seed)
         
-        # [修正] kwargs.get()ではなく、直接引数を使用する
         expr_mode = EXPR_MODE_JP.get(表情モード, "daily")
         complexity = COMPLEXITY_JP.get(構図の複雑さ, "normal")
         nsfw_level = NSFW_JP.get(アダルト表現, "off")
         theme = THEME_PACK_JP.get(テーマ, "none")
         gaze_target = 視線ターゲット
         max_len = int(最大文字数)
-        lowercase = bool(小文字化)
+        # [修正] UIからの入力をやめ、常にTrue（小文字化する）に設定
+        lowercase = True
 
         # 確率プロファイルとUIからの倍率を適用 (optionalな項目はkwargsから取得)
         base_probs = _complexity_profile(complexity)
@@ -279,4 +276,3 @@ class PoseEmotionTagNode:
         tag = limit_len(tag, max_len)
 
         return (tag,)
-
