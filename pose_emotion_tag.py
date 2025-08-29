@@ -3,6 +3,7 @@
 # - 排他タググループ機能の実装
 # - 感情テーマパックのブースト機能
 # - UIのシンプル化とロジックの刷新
+# - [改良] 最大文字数までタグを充填する機能を追加
 
 from typing import Dict, List, Set, Tuple
 import re
@@ -24,22 +25,18 @@ from .vocab.pose_emotion_vocab import (
 )
 
 # ===== 日本語UIマップ =====
-# [更新] 新しい感情モードを追加
 EXPR_MODE_JP = {
     "日常": "daily", "魅惑": "allure", "喜び": "joy",
     "悲しみ": "sadness", "怒り": "anger", "官能": "erotic",
 }
-# [更新] テーマパックのキーを動的に取得
 THEME_PACK_JP = {name.replace("_", " "): name for name in EMOTION_THEME_PACKS.keys()}
-THEME_PACK_JP["なし"] = "none" # デフォルト値
+THEME_PACK_JP["なし"] = "none"
 
 COMPLEXITY_JP = {"単純": "simple", "標準": "normal", "複雑": "complex"}
 NSFW_JP = {"オフ": "off", "アダルト寄り(非露骨)": "suggestive", "アダルト(露骨フィルタ)": "explicit"}
 
 # ===== 確率プロファイル関数 =====
-# [更新] UIのシンプル化に伴い、プロファイルを簡素化
 def _complexity_profile(level: str) -> Dict[str, float]:
-    # 各カテゴリの基本出現確率
     base = dict(view=0.8, full_body=1.0, upper_body=0.8, lower_body=0.6, expression=1.0, effects=0.5)
     if level == "simple":
         base.update(view=0.5, upper_body=0.5, lower_body=0.3, effects=0.2)
@@ -48,9 +45,7 @@ def _complexity_profile(level: str) -> Dict[str, float]:
     return base
 
 # ===== 語彙プール準備関数 =====
-# [新規] NSFWレベルに応じて語彙プールを拡張する
 def _get_vocab_pools(nsfw_level: str) -> Dict[str, List[str]]:
-    # pose_emotion_vocab.py に EXPLICIT_SEX_POSES と EXPLICIT_SEX_LEXICON が存在しない可能性への対応
     try:
         from .vocab.pose_emotion_vocab import EXPLICIT_SEX_POSES, EXPLICIT_SEX_LEXICON
     except ImportError:
@@ -59,35 +54,25 @@ def _get_vocab_pools(nsfw_level: str) -> Dict[str, List[str]]:
         
     pools = {
         "view": merge_unique(VIEW_ANGLES, VIEW_FRAMING),
-        "pose_standing": POSE_STANDING[:],
-        "pose_sitting": POSE_SITTING[:],
-        "pose_lying": POSE_LYING[:],
-        "pose_dynamic": POSE_DYNAMIC[:],
+        "pose_standing": POSE_STANDING[:], "pose_sitting": POSE_SITTING[:],
+        "pose_lying": POSE_LYING[:], "pose_dynamic": POSE_DYNAMIC[:],
         "upper_body": merge_unique(HAND_POSITIONS, HAND_GESTURES, SPINE_AND_SHOULDERS),
-        "lower_body": LEG_POSITIONS[:],
-        "mouth": MOUTH_BASE[:],
-        "eyes": EYES_BASE[:],
-        "brows": BROWS_BASE[:],
-        "effects": EFFECTS[:],
+        "lower_body": LEG_POSITIONS[:], "mouth": MOUTH_BASE[:],
+        "eyes": EYES_BASE[:], "brows": BROWS_BASE[:], "effects": EFFECTS[:],
     }
-    # 感情モードごとの語彙を追加
     for mode, data in EXPRESSION_MODES.items():
         pools[f"mood_{mode}"] = data["mood"]
 
     if nsfw_level in ["suggestive", "explicit"]:
-        # サジェスティブな語彙を追加 (suggestive, explicit共通)
-        pools["upper_body"].extend(EXTRA_NSFW_POSE) # 手や体幹のポーズに統合
-        pools["lower_body"].extend(EXTRA_NSFW_POSE) # 脚のポーズに統合
+        pools["upper_body"].extend(EXTRA_NSFW_POSE)
+        pools["lower_body"].extend(EXTRA_NSFW_POSE)
         for mode in ["allure", "erotic"]:
             pools[f"mood_{mode}"].extend(EXTRA_NSFW_EXPR)
         pools["effects"].extend(EXTRA_NSFW_EXPR)
 
     if nsfw_level == "explicit":
-        # 露骨な語彙を追加 (explicitのみ)
-        # 注意: これらは最終的に _sanitize でフィルタリングされる可能性がある
         pools["pose_dynamic"].extend(EXPLICIT_SEX_POSES)
         pools["mood_erotic"].extend(EXPLICIT_SEX_LEXICON)
-
     return pools
 
 # ===== サニタイズ関数 =====
@@ -96,8 +81,7 @@ def _compile_block_patterns():
     global _BLOCK_PATTERNS
     if _BLOCK_PATTERNS is None:
         if not EXPLICIT_BLOCKLIST:
-            _BLOCK_PATTERNS = False
-            return _BLOCK_PATTERNS
+            _BLOCK_PATTERNS = False; return
         terms = sorted(EXPLICIT_BLOCKLIST, key=lambda s: (-len(s), s))
         pat = r"|".join(re.escape(t) for t in terms if t)
         _BLOCK_PATTERNS = re.compile(pat, re.IGNORECASE) if pat else False
@@ -105,115 +89,69 @@ def _compile_block_patterns():
 
 def _sanitize(seq: List[str]) -> List[str]:
     pat = _compile_block_patterns()
-    if not pat:
-        return [s.strip() for s in seq if s and s.strip()]
+    if not pat: return [s.strip() for s in seq if s and s.strip()]
     return [s.strip() for s in seq if s and s.strip() and not pat.search(s)]
 
 # ===== タグ生成コア関数 =====
-# [ロジック刷新] 排他グループとテーマパックを処理する新しいコア関数
+# [修正] 戻り値を (タグのリスト, 使用済み排他グループのセット) に変更
 def _compose(rng, probs: Dict[str, float], pools: Dict[str, List[str]],
-             expr_mode: str, theme: str, gaze_target: str) -> str:
+             expr_mode: str, theme: str, gaze_target: str,
+             tag_to_group_map: Dict[str, str]) -> Tuple[List[str], Set[str]]:
 
     chosen_tags: List[str] = []
     used_exclusive_groups: Set[str] = set()
-    
-    # 逆引き辞書を作成して、どのタグがどのグループに属するかを高速に引けるようにする
-    tag_to_group_map: Dict[str, str] = {
-        tag: group_name
-        for group_name, tags in EXCLUSIVE_TAG_GROUPS.items()
-        for tag in tags
-    }
 
     def _handle_exclusive_selection(pool: List[str]) -> str | None:
-        """排他グループを考慮してタグを一つ選択する"""
-        # プール内のタグが属する可能性のあるグループを特定
-        possible_groups = {tag_to_group_map.get(tag) for tag in pool if tag_to_group_map.get(tag)}
-        
-        # 既に使われたグループに属するタグは選択肢から除外
-        available_pool = [
-            tag for tag in pool
-            if tag_to_group_map.get(tag) not in used_exclusive_groups
-        ]
-        
-        if not available_pool:
-            return None
-
-        # タグを選択
+        available_pool = [t for t in pool if tag_to_group_map.get(t) not in used_exclusive_groups]
+        if not available_pool: return None
         tag = pick(rng, available_pool)
         if tag:
-            # タグが属するグループを特定し、使用済みとしてマーク
             group = tag_to_group_map.get(tag)
-            if group:
-                used_exclusive_groups.add(group)
+            if group: used_exclusive_groups.add(group)
         return tag
 
-    # 1. テーマパックによるブースト
     if theme != "none" and theme in EMOTION_THEME_PACKS:
         pack = EMOTION_THEME_PACKS[theme]
-        chosen_tags.extend(pack.get("pose_boost", []))
-        chosen_tags.extend(pack.get("expr_boost", []))
-        chosen_tags.extend(pack.get("camera_boost", []))
-        # ブーストで追加されたタグの排他グループを使用済みにする
-        for tag in chosen_tags:
+        boost_tags = pack.get("pose_boost", []) + pack.get("expr_boost", []) + pack.get("camera_boost", [])
+        chosen_tags.extend(boost_tags)
+        for tag in boost_tags:
             group = tag_to_group_map.get(tag)
-            if group:
-                used_exclusive_groups.add(group)
+            if group: used_exclusive_groups.add(group)
 
-    # 2. ポーズの選択
     if maybe(rng, probs["full_body"]):
-        # 4つの全身ポーズカテゴリから1つだけを選択する
-        posture_category = pick(rng, ["pose_standing", "pose_sitting", "pose_lying", "pose_dynamic"])
-        tag = _handle_exclusive_selection(pools[posture_category])
-        if tag: chosen_tags.append(tag)
-
+        cat = pick(rng, ["pose_standing", "pose_sitting", "pose_lying", "pose_dynamic"])
+        if tag := _handle_exclusive_selection(pools[cat]): chosen_tags.append(tag)
     if maybe(rng, probs["upper_body"]):
-        tag = _handle_exclusive_selection(pools["upper_body"])
-        if tag: chosen_tags.append(tag)
-
+        if tag := _handle_exclusive_selection(pools["upper_body"]): chosen_tags.append(tag)
     if maybe(rng, probs["lower_body"]):
-        tag = _handle_exclusive_selection(pools["lower_body"])
-        if tag: chosen_tags.append(tag)
-        
+        if tag := _handle_exclusive_selection(pools["lower_body"]): chosen_tags.append(tag)
     if maybe(rng, probs["view"]):
-        tag = _handle_exclusive_selection(pools["view"])
-        if tag: chosen_tags.append(tag)
+        if tag := _handle_exclusive_selection(pools["view"]): chosen_tags.append(tag)
 
-    # 3. 表情の選択
     if maybe(rng, probs["expression"]):
         chosen_tags.append(pick(rng, pools["mouth"]))
         chosen_tags.append(pick(rng, pools["eyes"]))
         if maybe(rng, 0.6): chosen_tags.append(pick(rng, pools["brows"]))
         
-        # 視線ターゲットの処理
         if gaze_target != "自動":
-            # "closed" は排他グループではない特別なケース
-            if gaze_target == "closed":
-                chosen_tags.append("closed eyes")
+            if gaze_target == "closed": chosen_tags.append("closed eyes")
             else:
-                tag = gaze_target
-                group = tag_to_group_map.get(tag)
+                group = tag_to_group_map.get(gaze_target)
                 if group not in used_exclusive_groups:
-                    chosen_tags.append(tag)
+                    chosen_tags.append(gaze_target)
                     if group: used_exclusive_groups.add(group)
         else:
-            # 自動の場合は排他性を考慮して選択
-             tag = _handle_exclusive_selection(pools["eyes"]) # gazeはeyesプールの一部
-             if tag: chosen_tags.append(tag)
+            if tag := _handle_exclusive_selection(pools["eyes"]): chosen_tags.append(tag)
 
-
-        # 感情ムードの選択
-        mood_pool = pools.get(f"mood_{expr_mode}", [])
-        if mood_pool:
+        if mood_pool := pools.get(f"mood_{expr_mode}", []):
             chosen_tags.append(pick(rng, mood_pool))
 
-    # 4. エフェクト
     if maybe(rng, probs["effects"]):
         chosen_tags.append(pick(rng, pools["effects"]))
 
-    # 最終的なサニタイズと結合
     unique_tags = merge_unique(*[chosen_tags])
     sanitized_tags = _sanitize(unique_tags)
-    return join_clean(sanitized_tags)
+    return sanitized_tags, used_exclusive_groups
 
 
 # ===== ComfyUIノードクラス =====
@@ -243,20 +181,16 @@ class PoseEmotionTagNode:
     FUNCTION = "generate"
     CATEGORY = "tagging"
 
-    # [修正] generate関数のシグネチャから「小文字化」を削除
     def generate(self, seed, 表情モード, 構図の複雑さ, アダルト表現, テーマ, 視線ターゲット, 最大文字数, **kwargs):
         rng = rng_from_seed(seed)
-        
         expr_mode = EXPR_MODE_JP.get(表情モード, "daily")
         complexity = COMPLEXITY_JP.get(構図の複雑さ, "normal")
         nsfw_level = NSFW_JP.get(アダルト表現, "off")
         theme = THEME_PACK_JP.get(テーマ, "none")
         gaze_target = 視線ターゲット
         max_len = int(最大文字数)
-        # [修正] UIからの入力をやめ、常にTrue（小文字化する）に設定
         lowercase = True
 
-        # 確率プロファイルとUIからの倍率を適用 (optionalな項目はkwargsから取得)
         base_probs = _complexity_profile(complexity)
         probs = {
             "full_body":  base_probs["full_body"]  * kwargs.get("確率: 全身ポーズ", 1.0),
@@ -267,12 +201,39 @@ class PoseEmotionTagNode:
             "effects":    base_probs["effects"]    * kwargs.get("確率: エフェクト", 1.0),
         }
 
-        # 語彙プールを取得
         pools = _get_vocab_pools(nsfw_level)
+        
+        tag_to_group_map = {tag: name for name, tags in EXCLUSIVE_TAG_GROUPS.items() for tag in tags}
 
-        # タグを生成
-        tag = _compose(rng, probs, pools, expr_mode, theme, gaze_target)
+        # 1. 最初のタグセットを生成
+        current_tags, used_groups = _compose(rng, probs, pools, expr_mode, theme, gaze_target, tag_to_group_map)
+
+        # 2. [新規] 最大文字数までタグを充填
+        # 全カテゴリの語彙を一つのリストにまとめ、シャッフルする
+        fill_pool = [tag for pool in pools.values() for tag in pool]
+        rng.shuffle(fill_pool)
+
+        for candidate_tag in fill_pool:
+            # 既に存在するタグ、または排他グループが使用済みのタグはスキップ
+            if not candidate_tag or candidate_tag in current_tags:
+                continue
+            if tag_to_group_map.get(candidate_tag) in used_groups:
+                continue
+
+            # 追加後の文字列長をチェック (+2 は ", " の分)
+            if len(join_clean(current_tags + [candidate_tag])) > max_len:
+                continue
+
+            # タグを追加し、使用済み排他グループを更新
+            current_tags.append(candidate_tag)
+            group = tag_to_group_map.get(candidate_tag)
+            if group:
+                used_groups.add(group)
+
+        # 最終的な文字列を生成
+        tag = join_clean(current_tags)
         tag = normalize(tag, lowercase)
+        # 念のため最終的な文字数制限をかける
         tag = limit_len(tag, max_len)
 
         return (tag,)
