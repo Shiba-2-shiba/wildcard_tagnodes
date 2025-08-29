@@ -1,15 +1,8 @@
-# pose_emotion_tag.py (改訂版)
-# 新しい語彙体系 (improved_pose_emotion_vocab.py) に完全対応。
-# - 排他タググループ機能の実装
-# - 感情テーマパックのブースト機能
-# - UIのシンプル化とロジックの刷新
-# - [改良] 最大文字数までタグを充填する機能を追加
 
 from typing import Dict, List, Set, Tuple
 import re
 from .util import rng_from_seed, maybe, pick, join_clean, limit_len, normalize, merge_unique
 
-# [更新] 新しい語彙ファイルをインポート
 from .vocab.pose_emotion_vocab import (
     # 基本語彙
     VIEW_ANGLES, VIEW_FRAMING,
@@ -75,23 +68,6 @@ def _get_vocab_pools(nsfw_level: str) -> Dict[str, List[str]]:
         pools["mood_erotic"].extend(EXPLICIT_SEX_LEXICON)
     return pools
 
-# ===== サニタイズ関数 =====
-_BLOCK_PATTERNS = None
-def _compile_block_patterns():
-    global _BLOCK_PATTERNS
-    if _BLOCK_PATTERNS is None:
-        if not EXPLICIT_BLOCKLIST:
-            _BLOCK_PATTERNS = False; return
-        terms = sorted(EXPLICIT_BLOCKLIST, key=lambda s: (-len(s), s))
-        pat = r"|".join(re.escape(t) for t in terms if t)
-        _BLOCK_PATTERNS = re.compile(pat, re.IGNORECASE) if pat else False
-    return _BLOCK_PATTERNS
-
-def _sanitize(seq: List[str]) -> List[str]:
-    pat = _compile_block_patterns()
-    if not pat: return [s.strip() for s in seq if s and s.strip()]
-    return [s.strip() for s in seq if s and s.strip() and not pat.search(s)]
-
 # ===== タグ生成コア関数 =====
 # [修正] 戻り値を (タグのリスト, 使用済み排他グループのセット) に変更
 def _compose(rng, probs: Dict[str, float], pools: Dict[str, List[str]],
@@ -150,7 +126,7 @@ def _compose(rng, probs: Dict[str, float], pools: Dict[str, List[str]],
         chosen_tags.append(pick(rng, pools["effects"]))
 
     unique_tags = merge_unique(*[chosen_tags])
-    sanitized_tags = _sanitize(unique_tags)
+    sanitized_tags = unique_tags
     return sanitized_tags, used_exclusive_groups
 
 
@@ -237,3 +213,4 @@ class PoseEmotionTagNode:
         tag = limit_len(tag, max_len)
 
         return (tag,)
+
