@@ -1,22 +1,27 @@
-# clothing_tag.py — 拡張版 v3.5（語彙フォルダ対応）
-# - 語彙のインポート元を vocab/clothing_vocab.py に変更
+# clothing_tag.py (v6 - 露出度選択・文字数調整強化版)
+# - UIから露出度を選択可能に
+# - 文字数上限まで積極的にタグを追加するロジックに強化
 
-from typing import List, Optional, Dict
+import random
+from typing import List, Optional, Dict, Set
 from .util import (
     rng_from_seed, maybe, pick, join_clean, limit_len, normalize, merge_unique
 )
-# [修正] vocabパッケージ内のclothing_vocabからインポートするように変更
+# [修正なし] 語彙定義をインポート
 from .vocab.clothing_vocab import (
-    COLORS, MATERIALS, PATTERNS, STYLES, CLOSURES, EMBELLISH,
-    BASES_EROTIC, ACCENTS_EROTIC, BASES_NONEROTIC, ACCENTS_NONEROTIC,
-    REVEAL_MILD, REVEAL_BOLD, REVEAL_EXPLICIT, THEMES
+    COLORS, MATERIALS, PATTERNS, STYLES, EMBELLISH,
+    TOPS, BOTTOMS, OUTERWEAR, DRESSES_SETS, LINGERIE,
+    ACCENTS_EROTIC, REVEAL_MILD, REVEAL_BOLD, REVEAL_EXPLICIT,
+    STATES,
+    THEMES, EXCLUSIVE_GROUPS
 )
 
 # ========================
 # UI日本語化のための定義
 # ========================
 MODE_MAP_JP = {"一般": "non_erotic", "セクシー": "erotic"}
-EXPOSURE_MAP_JP = {"控えめ": "modest", "普通": "mild", "大胆": "bold", "過激": "explicit"}
+# [修正] 露出度の選択肢を更新
+EXPOSURE_MAP_JP = {"なし": "none", "マイルド": "mild", "大胆": "bold", "過激": "explicit"}
 THEME_CHOICES = ["none"] + sorted(list(THEMES.keys()))
 
 # ========================
@@ -26,54 +31,120 @@ def _apply_themes(base: dict, theme_keys: List[str]) -> dict:
     b = base.copy()
     for k in theme_keys:
         t = THEMES.get(k, {})
-        b["bases_erotic"] = merge_unique(b["bases_erotic"], t.get("bases_erotic", []))
-        b["bases_non"]    = merge_unique(b["bases_non"],    t.get("bases_non",    []))
-        b["acc_erotic"]   = merge_unique(b["acc_erotic"],   t.get("accents_erotic", []))
-        b["acc_non"]      = merge_unique(b["acc_non"],      t.get("accents_non",    []))
-        b["materials"]    = merge_unique(b["materials"],    t.get("materials", []))
-        b["patterns"]     = merge_unique(b["patterns"],     t.get("patterns",  []))
-        b["styles"]       = merge_unique(b["styles"],       t.get("styles",    []))
+        for vocab_key in b.keys():
+            b[vocab_key] = merge_unique(b[vocab_key], t.get(vocab_key, []))
     return b
 
-def _exposure_profile(level: str, erotic: bool):
-    level = (level or "modest").lower()
-    mul = dict(color=1.0, material=1.0, pattern=1.0, style=1.0, accent=1.0, reveal=0.0)
-    pool = []
-    if level == "modest": mul.update(style=0.9, accent=0.7, reveal=0.0)
-    elif level == "mild": mul.update(style=1.0, accent=1.0, reveal=0.35 if erotic else 0.15); pool = REVEAL_MILD
-    elif level == "bold": mul.update(style=1.1, accent=1.15, reveal=0.6 if erotic else 0.3); pool = REVEAL_MILD + REVEAL_BOLD
-    else: mul.update(style=1.15, accent=1.3, reveal=0.85 if erotic else 0.45); pool = REVEAL_MILD + REVEAL_BOLD + REVEAL_EXPLICIT
-    return mul, pool
+def _get_exclusive_tags(first_tag: str) -> Set[str]:
+    exclusive_set = set()
+    for group_name, groups in EXCLUSIVE_GROUPS.items():
+        for category, tags in groups.items():
+            if first_tag in tags:
+                for other_category, other_tags in groups.items():
+                    if category != other_category:
+                        exclusive_set.update(other_tags)
+    return exclusive_set
 
-def _prepare_lists(theme_keys: List[str]):
-    base = dict(colors=COLORS, materials=MATERIALS, patterns=PATTERNS, styles=STYLES, closures=CLOSURES, embellish=EMBELLISH, bases_erotic=BASES_EROTIC, bases_non=BASES_NONEROTIC, acc_erotic=ACCENTS_EROTIC, acc_non=ACCENTS_NONEROTIC,)
-    if theme_keys: base = _apply_themes(base, theme_keys)
+def _prepare_lists(theme_keys: List[str]) -> Dict[str, List[str]]:
+    base = {
+        "colors": COLORS, "materials": MATERIALS, "patterns": PATTERNS,
+        "styles": STYLES, "embellish": EMBELLISH, "tops": TOPS, "bottoms": BOTTOMS,
+        "outerwear": OUTERWEAR, "dresses_sets": DRESSES_SETS, "lingerie": LINGERIE,
+        "accents_erotic": ACCENTS_EROTIC, "reveal_mild": REVEAL_MILD,
+        "reveal_bold": REVEAL_BOLD, "reveal_explicit": REVEAL_EXPLICIT,
+        "states": STATES
+    }
+    if theme_keys:
+        base = _apply_themes(base, theme_keys)
     return base
 
-def _compose(rng, p, L, erotic: bool, exposure_level: str) -> str:
-    mul, reveal_pool = _exposure_profile(exposure_level, erotic)
-    def scaled(prob): return max(0.0, min(1.0, prob * mul.get("accent", 1.0)))
-    color  = pick(rng, L["colors"])     if maybe(rng, p["p_color"] * mul.get("color",1.0)) else None
-    mater  = pick(rng, L["materials"])  if maybe(rng, p["p_material"] * mul.get("material",1.0)) else None
-    patt   = pick(rng, L["patterns"])   if maybe(rng, p["p_pattern"] * mul.get("pattern",1.0)) else None
-    base   = pick(rng, L["bases_erotic"] if erotic else L["bases_non"]) or ("lingerie set" if erotic else "outfit set")
-    if erotic and any(k in (base or "").lower() for k in ["blindfold","pasties","rope","handcuffs"]) and mater is None: mater = pick(rng, ["silk","satin","leather"])
-    head = join_clean([color, mater, patt, base], sep=" ")
-    tail: List[str] = []
-    if maybe(rng, p["p_style"] * mul.get("style",1.0)): tail.append(pick(rng, L["styles"]))
-    if maybe(rng, p["p_closure"]): tail.append(pick(rng, CLOSURES))
-    if maybe(rng, p["p_embellish"]): tail.append(pick(rng, L["embellish"]))
+def _get_exposure_profile(level: str, erotic: bool, L: Dict[str, List[str]]) -> (List[str], float):
+    """露出度設定に応じたタグのプールと確率を返す"""
+    level = (level or "none").lower()
+    pool, prob = [], 0.0
     if erotic:
-        if maybe(rng, scaled(p["p_accent_core"])): tail.append(pick(rng, L["acc_erotic"]))
-        if reveal_pool and maybe(rng, mul.get("reveal",0.0)): tail.append(pick(rng, reveal_pool))
-    else:
-        if maybe(rng, scaled(p["p_accent_core"])): tail.append(pick(rng, L["acc_non"]))
-        if reveal_pool and maybe(rng, mul.get("reveal",0.0) * 0.6): tail.append(pick(rng, REVEAL_MILD if exposure_level in ("mild","bold") else REVEAL_MILD))
-    tail = [t for t in tail if t]
-    return join_clean([head, ", ".join(tail)], sep=", ") if tail else head
+        if level == "mild":     pool, prob = L["reveal_mild"], 0.5
+        elif level == "bold":   pool, prob = L["reveal_mild"] + L["reveal_bold"], 0.75
+        elif level == "explicit": pool, prob = L["reveal_bold"] + L["reveal_explicit"], 0.9
+    else: # non-erotic
+        if level == "mild":     pool, prob = L["reveal_mild"], 0.3
+        elif level == "bold":   pool, prob = L["reveal_mild"] + L["reveal_bold"], 0.5
+    return pool, prob
 
 # ========================
-# 単出力版
+# 生成ロジック
+# ========================
+def _compose(rng: random.Random, L: Dict[str, List[str]], erotic: bool, exposure_level: str, max_len: int) -> str:
+    # --- ステージ1: 基本的な服装の組み合わせを決定 ---
+    base_tags = []
+    selected_categories = set()
+    if erotic:
+        if maybe(rng, 0.6): base_tags.append(pick(rng, L["lingerie"])); selected_categories.add("lingerie")
+        else: base_tags.extend([pick(rng, L["tops"]), pick(rng, L["bottoms"])]); selected_categories.update(["tops", "bottoms"])
+    else:
+        if maybe(rng, 0.4): base_tags.append(pick(rng, L["dresses_sets"])); selected_categories.add("dresses_sets")
+        else: base_tags.extend([pick(rng, L["tops"]), pick(rng, L["bottoms"])]); selected_categories.update(["tops", "bottoms"])
+    if "dresses_sets" in selected_categories or ("tops" in selected_categories and "bottoms" in selected_categories):
+        if maybe(rng, 0.35): base_tags.append(pick(rng, L["outerwear"])); selected_categories.add("outerwear")
+
+    # --- ステージ2: 装飾的なタグを確率に基づいて追加 ---
+    all_tags = list(base_tags)
+    exclusive_tags = set().union(*[_get_exclusive_tags(tag) for tag in all_tags])
+
+    def add_tag_if_not_exclusive(category: str, probability: float):
+        if maybe(rng, probability):
+            available_tags = [t for t in L[category] if t not in exclusive_tags]
+            if available_tags:
+                tag = pick(rng, available_tags)
+                all_tags.append(tag)
+                exclusive_tags.update(_get_exclusive_tags(tag))
+                selected_categories.add(category)
+
+    add_tag_if_not_exclusive("colors", 0.8)
+    add_tag_if_not_exclusive("materials", 0.7)
+    add_tag_if_not_exclusive("patterns", 0.4)
+    add_tag_if_not_exclusive("styles", 0.6)
+    add_tag_if_not_exclusive("embellish", 0.5)
+    if erotic: add_tag_if_not_exclusive("accents_erotic", 0.6)
+    
+    # --- ステージ3: 露出表現の追加 ---
+    exposure_pool, exposure_prob = _get_exposure_profile(exposure_level, erotic, L)
+    if exposure_pool and maybe(rng, exposure_prob):
+        tag = pick(rng, exposure_pool)
+        if tag not in exclusive_tags:
+            all_tags.append(tag)
+
+    # --- ステージ4: 服装の状態を低確率で追加 ---
+    if maybe(rng, 0.2):
+        available_states = [s for s in L["states"] if s not in exclusive_tags]
+        if available_states: all_tags.append(pick(rng, available_states))
+
+    # --- [強化] ステージ5: 文字数調整 ---
+    supplementary_categories = ["styles", "embellish", "materials", "patterns", "colors"]
+    if erotic: supplementary_categories.append("accents_erotic")
+    
+    # 文字数が最大値に近づくまでタグを追加し続ける
+    while len(join_clean(all_tags)) < max_len and supplementary_categories:
+        category_to_add = rng.choice(supplementary_categories)
+        available_tags = [t for t in L[category_to_add] if t not in exclusive_tags and t not in all_tags]
+        
+        if available_tags:
+            tag = pick(rng, available_tags)
+            # 追加しても文字数を超えない場合のみ追加
+            if len(join_clean(all_tags + [tag])) <= max_len:
+                all_tags.append(tag)
+                exclusive_tags.update(_get_exclusive_tags(tag))
+            else:
+                # このタグを追加すると長すぎるので、このカテゴリは一旦試行済みとする
+                supplementary_categories.remove(category_to_add)
+        else:
+            # このカテゴリには追加できるタグがないのでリストから削除
+            supplementary_categories.remove(category_to_add)
+
+    return join_clean(all_tags)
+
+# ========================
+# ComfyUI Node Class
 # ========================
 class ClothingTagNode:
     @classmethod
@@ -81,25 +152,13 @@ class ClothingTagNode:
         return {
             "required": {
                 "seed": ("INT", {"default": 42, "min": 0, "max": 2**31-1}),
+                "モード": (list(MODE_MAP_JP.keys()),),
+                "露出度": (list(EXPOSURE_MAP_JP.keys()), {"default": "マイルド"}), # [修正]
+                "最大文字数": ("INT", {"default": 150, "min": 30, "max": 4096}),
             },
             "optional": {
-                "モード": (list(MODE_MAP_JP.keys()),),
-                "テーマ1": (THEME_CHOICES,),
-                "テーマ2": (THEME_CHOICES,),
-                "テーマ3": (THEME_CHOICES,),
-                "テーマ4": (THEME_CHOICES,),
-                "テーマ5": (THEME_CHOICES,),
-                "露出度": (list(EXPOSURE_MAP_JP.keys()), {"default": "普通"}),
-                "最大文字数": ("INT", {"default": 120, "min": 0, "max": 4096}),
+                "テーマ1": (THEME_CHOICES,), "テーマ2": (THEME_CHOICES,), "テーマ3": (THEME_CHOICES,),
                 "小文字化": ("BOOL", {"default": True}),
-                "確率: 色": ("FLOAT", {"default": 0.7, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "確率: 素材": ("FLOAT", {"default": 0.8, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "確率: 柄": ("FLOAT", {"default": 0.35, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "確率: スタイル": ("FLOAT", {"default": 0.55, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "確率: 留め具": ("FLOAT", {"default": 0.35, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "確率: 装飾": ("FLOAT", {"default": 0.55, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "確率: アクセント": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.01}),
-                "確率: 露出表現": ("FLOAT", {"default": 0.45, "min": 0.0, "max": 1.0, "step": 0.01}),
             }
         }
 
@@ -107,30 +166,18 @@ class ClothingTagNode:
     FUNCTION = "generate"
     CATEGORY = "Text/Wildcards"
 
-    def generate(self, seed, モード="一般",
-                 テーマ1="none", テーマ2="none", テーマ3="none", テーマ4="none", テーマ5="none",
-                 露出度="普通", 最大文字数=120, 小文字化=True,
-                 確率_色=0.7, 確率_素材=0.8, 確率_柄=0.35,
-                 確率_スタイル=0.55, 確率_留め具=0.35, 確率_装飾=0.55, 確率_アクセント=0.5, 確率_露出表現=0.45,
-                 **kwargs):
+    def generate(self, seed, モード, 露出度, 最大文字数, テーマ1="none", テーマ2="none", テーマ3="none", 小文字化=True, **kwargs):
         rng = rng_from_seed(seed)
         mode_en = MODE_MAP_JP.get(モード, "non_erotic")
-        exposure_en = EXPOSURE_MAP_JP.get(露出度, "mild")
-
-        keys = []
-        for k in [テーマ1, テーマ2, テーマ3, テーマ4, テーマ5]:
-            if k and k != "none" and k in THEMES and k not in keys:
-                keys.append(k)
+        exposure_en = EXPOSURE_MAP_JP.get(露出度, "none") # [修正]
         
-        L = _prepare_lists(keys)
+        theme_keys = [k for k in [テーマ1, テーマ2, テーマ3] if k and k != "none"]
+        L = _prepare_lists(theme_keys)
         
-        params = {
-            "p_color": 確率_色, "p_material": 確率_素材, "p_pattern": 確率_柄,
-            "p_style": 確率_スタイル, "p_closure": 確率_留め具, "p_embellish": 確率_装飾,
-            "p_accent_core": 確率_アクセント, "p_reveal": 確率_露出表現
-        }
-
-        tag = _compose(rng, params, L, erotic=(mode_en=="erotic"), exposure_level=exposure_en)
+        tag = _compose(rng, L, erotic=(mode_en=="erotic"), exposure_level=exposure_en, max_len=最大文字数)
+        
         tag = normalize(tag, 小文字化)
+        # 最終的な文字数制限は念のため残す
         tag = limit_len(tag, 最大文字数)
+        
         return (tag,)

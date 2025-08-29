@@ -16,7 +16,7 @@ def pick(rng: random.Random, arr: List[str]) -> Optional[str]:
         return None
     return rng.choice(arr)
 
-def join_clean(parts: List[str], sep: str=", ") -> str:
+def join_clean(parts: List[str], sep: str=" ") -> str:
     parts = [p.strip() for p in parts if p and p.strip()]
     s = sep.join(parts)
     return re.sub(r"\s+", " ", s).strip()
@@ -39,3 +39,4 @@ def merge_unique(*lists: List[str]) -> List[str]:
                 seen.add(x)
                 out.append(x)
     return out
+

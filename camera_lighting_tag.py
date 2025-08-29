@@ -126,9 +126,10 @@ class CameraLightingTagNode:
 
         # 出力（時間/色, スタイル, 方向, 角度/ショット, トーン）
         parts = [time, color, style, direction, angle, shot, tone]
-        tag = join_clean(parts, sep=", ")
+        tag = join_clean(parts)
 
         tag = self._sanitize(tag)           # 禁止語の最終チェック
         tag = normalize(tag, 小文字化)
         tag = limit_len(tag, 最大文字数)
         return (tag,)
+

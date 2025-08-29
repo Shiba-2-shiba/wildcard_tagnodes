@@ -26,7 +26,7 @@ class ArtStyleTagNode:
         rng = rng_from_seed(seed)
         style = pick(rng, STYLES) or "digital painting"
         genre = pick(rng, GENRES) if maybe(rng, 確率_ジャンル) else None
-        tag = join_clean([genre, style], sep=", ")
+        tag = join_clean([genre, style])
         tag = normalize(tag, 小文字化)
         tag = limit_len(tag, 最大文字数)
         return (tag,)
