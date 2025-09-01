@@ -1,6 +1,7 @@
 # background_prompt_assembler.py
 # Advanced Background Tagノードからの出力を受け取り、
 # 背景描写に特化したMarkdown形式のプロンプトを生成するノード。
+# T5Gemmaなどのモデルが解釈しやすいように出力を調整。
 
 import re
 
@@ -43,7 +44,8 @@ class BackgroundPromptAssemblerNode:
                 "background_tags": ("STRING", {"multiline": False, "default": ""}),
             },
             "optional": {
-                "main_header": ("STRING", {"multiline": False, "default": "## 🏞️ Background & Scene"}),
+                # ★★★ T5Gemma向けにデフォルトヘッダーをシンプルに変更 ★★★
+                "main_header": ("STRING", {"multiline": False, "default": "## Background & Scene"}),
                 "show_category_headers": ("BOOL", {"default": True}),
             }
         }
@@ -52,9 +54,7 @@ class BackgroundPromptAssemblerNode:
     FUNCTION = "assemble_background_prompt"
     CATEGORY = "Text/Formatting"
 
-    # ★★★★★ ここからが修正箇所です ★★★★★
-    # オプションの引数にデフォルト値を追加して、エラーを防ぎます
-    def assemble_background_prompt(self, background_tags, main_header="## 🏞️ Background & Scene", show_category_headers=True):
+    def assemble_background_prompt(self, background_tags, main_header="## Background & Scene", show_category_headers=True):
         # 語彙ファイルが見つからない場合は、単純にタグを結合して返す
         if not VOCAB_IMPORTED:
             prompt = f"{main_header}\n{background_tags}"
@@ -77,40 +77,47 @@ class BackgroundPromptAssemblerNode:
             if not found_category:
                 misc_tags.append(tag)
         
-        # 分類不明のタグは、主要な「Environment」カテゴリにまとめる
         if misc_tags:
             categorized_tags["Environment"].extend(misc_tags)
 
-        # 3. Markdown形式で出力文字列を構築
+        # ★★★★★ ここからが出力形式の修正箇所です ★★★★★
+        # 3. T5Gemma向けのMarkdown形式で出力文字列を構築
         output_parts = []
         if main_header:
             output_parts.append(main_header.strip())
 
-        # 美しい出力のための表示順を定義
+        # 表示順を定義（絵文字は削除）
         display_order = [
-            ("🌳", "Environment"), ("🏛️", "Architecture"), ("🛋️", "Props"), ("✨", "Details"), 
-            ("💡", "Lighting"), ("🎬", "Effects (FX)"), ("🌦️", "Weather & Season"), 
-            ("🕒", "Time of Day"), ("🎨", "Texture")
+            "Environment", "Architecture", "Props", "Details", 
+            "Lighting", "Effects (FX)", "Weather & Season", 
+            "Time of Day", "Texture"
         ]
 
+        content_parts = []
         if show_category_headers:
             # カテゴリヘッダー付きの詳細表示
-            for emoji, category in display_order:
+            for category in display_order:
                 tags_in_category = categorized_tags.get(category)
                 if tags_in_category:
-                    line = f"- **{emoji} {category}:** {', '.join(tags_in_category)}"
-                    output_parts.append(line)
+                    # 各カテゴリをH3見出しとタグのリストで構成
+                    section = f"### {category}\n{', '.join(tags_in_category)}"
+                    content_parts.append(section)
+            
+            if content_parts:
+                # 各セクションを2つの改行で区切る
+                output_parts.append("\n\n".join(content_parts))
+
         else:
             # カテゴリヘッダーなしのシンプル表示
             all_categorized_tags = []
-            for _, category in display_order:
+            for category in display_order:
                  tags_in_category = categorized_tags.get(category)
                  if tags_in_category:
                     all_categorized_tags.extend(tags_in_category)
             if all_categorized_tags:
                 output_parts.append(', '.join(all_categorized_tags))
 
-
+        # main_headerと内容を1つの改行で結合
         final_prompt = "\n".join(output_parts)
         
         return (final_prompt,)
