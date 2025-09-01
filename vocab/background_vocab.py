@@ -17,7 +17,12 @@ BG_ENV_INDOOR = [
     "vintage movie theater", "retro record shop interior", "high-rise lounge bar with a city view", "glass elevator lobby",
     "subway concourse interior", "dimly lit bus terminal", "gothic cathedral nave", "baroque ballroom", "secret hidden library",
     "ancient temple interior", "steamy locker room", "artist's studio with paint splatters", "green-screen studio", "dimly lit basement workshop",
-    "opulent opera house", "grand library with skylight", "wizard's tower study", "alchemist's laboratory", "throne room of a castle"
+    "opulent opera house", "grand library with skylight", "wizard's tower study", "alchemist's laboratory", "throne room of a castle",
+    # New additions
+    "spaceship cockpit with a view of stars", "gleaming biodome interior", "stellar observatory dome", "engine room with glowing conduits",
+    "hydroponics bay with alien plants", "sunlit conservatory", "spacious artist's loft", "abandoned subway station",
+    "bustling indoor marketplace", "grand hotel lobby", "underground cavern temple", "scribe's scriptorium with scrolls",
+    "ornate palace hall"
 ]
 BG_ENV_OUTDOOR = [
     "rooftop garden overlooking the city", "quiet back alley with cobblestones", "lantern-lit lane at dusk",
@@ -29,7 +34,12 @@ BG_ENV_OUTDOOR = [
     "suburban backyard with a swing set", "childhood playground at dusk", "abandoned construction site", "car junkyard", "rural gas station",
     "highway rest stop at midnight", "city skyline at dusk", "suburban street at night", "quiet beach at sunrise",
     "mystical forest with ancient trees", "snowy mountain pass", "frozen lake", "autumn forest with vibrant colors",
-    "misty graveyard at midnight", "enchanted forest with glowing mushrooms", "floating islands in the sky", "castle courtyard"
+    "misty graveyard at midnight", "enchanted forest with glowing mushrooms", "floating islands in the sky", "castle courtyard",
+    # New additions
+    "majestic canyon overlook", "rim of a volcanic crater", "active geyser field", "shimmering salt flats",
+    "ancient glacier field", "glowing crystal forest", "alien jungle with exotic flora", "derelict spaceship graveyard in a desert",
+    "bustling city plaza with fountains", "picturesque canal city", "terraced rice paddies on a mountainside",
+    "ancient amphitheater ruins", "sprawling vineyard on a hillside", "a lone lighthouse on a cliff"
 ]
 
 # --- ディテール (DETAILS) ---
@@ -39,39 +49,54 @@ BG_DETAILS_INDOOR = [
     "floating dust motes in sunbeam", "shoji screens", "calligraphy scrolls", "tatami mats on the floor",
     "coffee steam rising", "whiskey glass on a table with melting ice", "worn books on a shelf", "dusty vinyl records", "scattered playing cards",
     "crumpled clothes on the floor", "potted plants in the foreground", "billowing smoke from an incense stick", "cracked plaster wall",
-    "steamy mirror with water streaks", "flickering fireplace", "ornate rug on wooden floor", "grandfather clock ticking"
+    "steamy mirror with water streaks", "flickering fireplace", "ornate rug on wooden floor", "grandfather clock ticking",
+    # New additions
+    "a single feather drifting down", "spilled ink on a wooden desk", "glowing embers in a hearth", "scattered blueprints and schematics",
+    "reflection in a polished floor", "glowing runes etched on a wall", "floating data screens", "sand trickling from a crack in the ceiling",
+    "a katana displayed on a stand", "a single chess piece on a board", "cobwebs in a corner", "water dripping from a pipe"
 ]
 BG_DETAILS_OUTDOOR = [
     "raindrops on a glass window", "puddles reflecting neon lights", "steaming manhole cover", "falling cherry blossom petals",
     "vibrant autumn leaves swirling in the wind", "paper lanterns glowing warmly", "graffiti on a brick wall", "rain-soaked reflections",
     "fireflies glowing at dusk", "pigeons taking flight from a square", "wet leaves clinging to pavement", "distant heat haze shimmering",
-    "dewdrops on a spiderweb", "dandelion seeds drifting in the air"
+    "dewdrops on a spiderweb", "dandelion seeds drifting in the air",
+    # New additions
+    "colorful prayer flags fluttering in the wind", "distant smoke signal on the horizon", "intricate frost patterns on a branch",
+    "a lone kite high in the sky", "contrail of a departing starship", "glowing spores floating in the air",
+    "cherry blossom petals floating on a stream", "ripples in a pond from a thrown stone", "footprints leading away in the snow",
+    "a single boat moored at a pier", "a forgotten scarecrow in a field", "wind rustling through tall grass"
 ]
 
 # --- 建築/構造 (ARCH) ---
 BG_ARCH_INDOOR = [
     "arched doorway", "bay window with a cushioned seat", "spiral staircase", "exposed brick wall", "industrial pipes overhead",
     "open beam ceiling", "paper sliding doors (shoji)", "baroque columns", "stained glass window", "vaulted ceiling",
-    "hidden passageway behind a bookshelf", "ornate fireplace", "library stacks stretching to the ceiling", "grand staircase"
+    "hidden passageway behind a bookshelf", "ornate fireplace", "library stacks stretching to the ceiling", "grand staircase",
+    "sunken lounge area", "two-story atrium", "mezzanine level overlooking a hall", "grand gallery with portraits", "indoor balcony",
+    "captain's quarters on a starship", "holographic control room", "observation deck with reinforced glass"
 ]
 BG_ARCH_OUTDOOR = [
     "stone torii gate", "retro phone booth", "vintage signboard", "ramen shop counter open to the street", "concrete overpass",
     "rusted fire escape", "ornate iron fence", "abandoned train car on overgrown tracks", "gothic spires against the sky",
     "flying buttresses of a cathedral", "modern glass facade reflecting the sky", "sloping tiled roof (kawara)", "wrought-iron balcony",
-    "ancient stone ruins", "ruined castle walls", "suspension bridge cables at night", "monumental arch", "old stone well", "wooden windmill"
+    "ancient stone ruins", "ruined castle walls", "suspension bridge cables at night", "monumental arch", "old stone well", "wooden windmill",
+    "drawbridge of a castle", "ornate bell tower", "ancient roman aqueduct", "colonnade pathway", "pergola covered in vines",
+    "spaceship landing pad", "base of a space elevator", "floating platforms connected by bridges"
 ]
 
 # --- 小道具 (PROPS) ---
 BG_PROPS_INDOOR = [
     "old CRT monitor displaying static", "vintage jukebox", "stacked books on a table", "record player spinning silently", "tea set on a lacquered tray",
     "potted bonsai tree", "candlestick with dripping wax", "crystal ball on a stand", "antique globe", "manual typewriter",
-    "artist's easel with an unfinished painting", "birdcage, empty", "go board with stones"
+    "artist's easel with an unfinished painting", "birdcage, empty", "go board with stones", "holographic map table", "ornate brass telescope",
+    "alembics and beakers bubbling", "weapons rack with swords", "spinning wheel and loom", "elaborate celestial model (orrery)"
 ]
 BG_PROPS_OUTDOOR = [
     "bicycle leaning against a wall", "empty soda cans rolling on the ground", "abandoned shopping cart", "old vending machine humming",
     "wooden crates stacked in an alley", "old street lamp casting a pool of light", "mailbox by the road", "dirty garbage cans",
     "weathered park bench", "swing set moving gently in the breeze", "broken swings", "colorful kites tangled in a tree",
-    "laundry on a clothesline", "forgotten tricycle", "street food stall", "newspaper stand", "fire hydrant", "bird bath", "wind chime"
+    "laundry on a clothesline", "forgotten tricycle", "street food stall", "newspaper stand", "fire hydrant", "bird bath", "wind chime",
+    "ornate water fountain", "ancient sundial", "hovering cargo drone", "signpost at a crossroads", "weather vane on a roof"
 ]
 
 # --- 共通カテゴリ (分割不要) ---
@@ -91,9 +116,23 @@ BG_TEXTURE = [
     "iridescent shimmer", "smooth silk folds", "woven wicker", "bamboo texture", "tarnished brass", "holographic surface"
 ]
 BG_WEATHER = [
-    "clear sky", "overcast sky", "light drizzle", "heavy rain", "gentle snowfall", "violent blizzard", "misty air",
-    "thick morning fog", "thunderstorm with lightning", "sun shower", "wet pavement shine", "pollen breeze",
-    "calm before a storm", "hazy summer day", "chilly winter air", "blinding sunlight", "calm ocean with gentle waves"
+    # Bright & Positive Weather
+    "perfect sunny day", "clear sky", "bright daylight", "crisp morning air", "warm gentle breeze", "beautiful afterglow",
+    "sunbeam breaking through clouds", "rainbow after a sun shower", "pollen breeze", "blinding sunlight", "hazy summer day",
+    # Rain & Wet
+    "light drizzle", "heavy rain", "sun shower", "wet pavement shine", "raindrops on window",
+    # Snow
+    "gentle snowfall", "heavy blizzard", "diamond dust (ice crystals in air)",
+    # Mist & Fog
+    "misty air", "thick morning fog", "bioluminescent fog",
+    # Clouds & Sky
+    "overcast sky", "dramatic storm clouds", "fluffy white clouds", "lenticular clouds", "vibrant sunset clouds",
+    # Storm
+    "thunderstorm with lightning", "calm before a storm",
+    # Fantastic & Special
+    "meteor shower", "aurora borealis", "solar eclipse", "floating particles of light", "comet in the night sky",
+    # General Conditions
+    "chilly winter air", "calm ocean with gentle waves"
 ]
 BG_TIME = [
     "sunrise", "morning light", "high noon light", "golden hour", "twilight", "blue hour", "deep midnight",
@@ -280,4 +319,5 @@ EXCLUSIVE_TAG_GROUPS = {
         ["light leaks", "lens flare", "strobe light effect", "glitching effect on a screen"],
     ]
 }
+
 
