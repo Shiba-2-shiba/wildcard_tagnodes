@@ -204,6 +204,51 @@ THEME_PACKS = {
         "weather": ["crisp autumn air", "gentle rain against the windowpane", "overcast sky", "first light snowfall on campus"],
         "time": ["late afternoon light", "cozy evening", "deep night, lit by candlelight", "early morning mist"],
         "fx": ["magical particles glittering in the air", "soft focus on background", "glowing runes", "subtle vignette effect"]
+    },
+        "wafu_serenity_nature": {
+        "env_indoor": ["shoji screen room with soft light", "traditional tea room (chashitsu)", "ryokan room with a cypress bath", "samurai residence study room", "veranda with a moon-viewing platform"],
+        "env_outdoor": ["dry landscape garden (karesansui)", "bamboo grove path with sunlight filtering through", "stone steps lined with cedar trees", "Japanese garden with a koi pond", "castle town at dusk"],
+        "details_indoor": ["a hanging scroll and flower arrangement in an alcove", "steam quietly rising from an iron kettle", "beautiful maki-e lacquerware box", "soft light from a paper lantern"],
+        "details_outdoor": ["water flowing from a stone basin", "wind chime tinkling in the breeze", "moss wet with rain", "scattering autumn leaves"],
+        "arch_indoor": ["lattice doors", "transom window carvings (ranma)", "circular window", "staggered shelves"],
+        "arch_outdoor": ["gently curved temple roof", "arched drum bridge", "stone lanterns", "white walls and stone base of a castle"],
+        "props_indoor": ["Japanese umbrella (wagasa)", "folding fan (sensu)", "koto instrument", "Go board"],
+        "props_outdoor": ["deer-scarer fountain (shishi-odoshi)", "bench with a large parasol", "ceremonial banners", "red lanterns of a food stall"],
+        "light": ["soft light through shoji paper screens", "sunlight filtering through trees (komorebi)", "warm glow of paper lanterns"],
+        "texture": ["tatami mat texture", "plastered wall", "polished wooden floor", "washi paper texture"],
+        "weather": ["calm indian summer day", "clear may weather", "gentle spring rain", "light mist"],
+        "time": ["dawn", "twilight (tasogare)", "moonlit night"],
+        "fx": ["hazy landscape", "reflection on the water surface", "soft light diffusion"]
+    },
+    "space_opera": {
+        "env_indoor": ["spaceship bridge with a panoramic viewport", "gleaming white space station corridor", "emperor's throne room on a capital planet", "bustling alien cantina", "holographic library"],
+        "env_outdoor": ["alien futuristic city skyline", "spaceport with departing and arriving ships", "lunar surface with twin suns", "palace's zero-gravity garden", "crystalline asteroid belt"],
+        "details_indoor": ["floating control panels", "energy lines flowing along walls", "stars streaking past the window", "sculpture made of unknown minerals"],
+        "details_outdoor": ["aurora shimmering in the sky", "planetary rings", "distant nebula", "giant floating creatures"],
+        "arch_indoor": ["transparent tube walkways", "anti-gravity staircases", "massive domed ceilings"],
+        "arch_outdoor": ["elegant skyscrapers piercing the heavens", "space elevator connecting to orbit", "massive ring-shaped habitat"],
+        "props_indoor": ["floating companion droid", "energy sword", "holo-projector displaying a star chart"],
+        "props_outdoor": ["streamlined personal speeder", "colossal battleship", "energy shield generator"],
+        "light": ["harsh light from a star", "blueish glow from engines", "colorful light from a nebula"],
+        "texture": ["polished metal armor", "luminous glass panels", "smooth nano-materials"],
+        "weather": ["storm with methane rain", "calm vacuum", "shimmer of solar wind"],
+        "time": ["endless night of space", "planetrise"],
+        "fx": ["light streaks from warp travel", "lens flare", "starfield"]
+    },
+    "desert_oasis_arabian_nights": {
+        "env_indoor": ["palace hall adorned with mosaic tiles", "throne room with fragrant incense smoke", "library with countless scrolls", "interior of a luxurious tent with rich textiles", "alchemist's hidden workshop"],
+        "env_outdoor": ["vast sun-drenched sand dunes", "vibrant marketplace (souk) with colorful goods", "palace courtyard with a fountain", "secret oasis with a waterfall", "ancient ruins half-buried in sand"],
+        "details_indoor": ["geometric tilework (zellige) on walls", "Persian rugs and cushions on the floor", "light filtering through latticework lamps", "piles of gold and treasures"],
+        "details_outdoor": ["awnings fluttering in the wind", "a caravan of camels", "piles of spices in the market", "a distant mirage"],
+        "arch_indoor": ["pointed arches (ogive arches)", "intricate wooden lattice windows (mashrabiya)", "domed ceilings"],
+        "arch_outdoor": ["soaring minarets", "fortified city walls (kasbah)", "white-domed palace"],
+        "props_indoor": ["hookah pipe", "scimitar sword", "magic lamp", "parchment star chart"],
+        "props_outdoor": ["magic carpet", "market stalls", "large earthenware jars", "hammock in the shade of a palm tree"],
+        "light": ["strong desert sunlight", "deep blue night sky full of stars", "flickering light of lanterns"],
+        "texture": ["fine sand", "glossy glazed tiles", "densely woven carpets", "hammered metalwork"],
+        "weather": ["cloudless clear sky", "a distant sandstorm", "scorching air"],
+        "time": ["high noon sun", "magic hour after sunset", "starry night"],
+        "fx": ["shimmering heat haze", "glow from a magical object", "brilliant starlight"]
     }
     # --- NEW THEME PACKS END ---
 }
@@ -235,3 +280,4 @@ EXCLUSIVE_TAG_GROUPS = {
         ["light leaks", "lens flare", "strobe light effect", "glitching effect on a screen"],
     ]
 }
+
