@@ -52,7 +52,9 @@ class BackgroundPromptAssemblerNode:
     FUNCTION = "assemble_background_prompt"
     CATEGORY = "Text/Formatting"
 
-    def assemble_background_prompt(self, background_tags, main_header, show_category_headers):
+    # ★★★★★ ここからが修正箇所です ★★★★★
+    # オプションの引数にデフォルト値を追加して、エラーを防ぎます
+    def assemble_background_prompt(self, background_tags, main_header="## 🏞️ Background & Scene", show_category_headers=True):
         # 語彙ファイルが見つからない場合は、単純にタグを結合して返す
         if not VOCAB_IMPORTED:
             prompt = f"{main_header}\n{background_tags}"
@@ -120,3 +122,4 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "BackgroundPromptAssemblerNode": "Background Prompt Assembler"
 }
+
