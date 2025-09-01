@@ -1,5 +1,6 @@
 # background_vocab.py
 # 語彙を大幅に拡充し、テーマパックを屋内/屋外の構造に完全対応させた完成版
+# New themes added: solapunk_art_nouveau, tropical_resort, cozy_academia
 
 # ========================
 # デフォルト語彙（拡充・再分類済み）
@@ -158,6 +159,53 @@ THEME_PACKS = {
         "props_indoor": ["antique grandfather clock stopped at midnight", "skull on a book", "organ with dusty keys", "surgical tools on a tray"],
         "props_outdoor": ["weathered tombstones", "empty coffin", "crow perched on a branch"],
     },
+    # --- NEW THEME PACKS START ---
+    "solapunk_art_nouveau": {
+        "env_indoor": ["sun-drenched atrium with lush greenery", "bio-luminescent library", "hydroponic garden room", "ornate conservatory with brass mechanics", "artist's workshop with stained-glass windows", "elegant tea room with floral motifs"],
+        "env_outdoor": ["city with verdant skyscrapers", "floating botanical islands", "solar-sail shipyard at dawn", "market street with clockwork vendors", "sweeping organic-shaped bridges over a canal", "community rooftop garden"],
+        "details_indoor": ["intricate brass clockwork mechanisms", "flowing silk banners with nature patterns", "holographic plant displays", "potted ferns and flowers", "sunlight filtering through patterned glass"],
+        "details_outdoor": ["stained-glass solar panels", "flocks of ornithopters in the sky", "pollen-like energy particles drifting in the air", "vines coiling around lampposts", "glowing moss pathways"],
+        "arch_indoor": ["art nouveau arches", "spiraling staircases around a giant tree", "geodesic dome skylights", "curving wooden beams", "filigree banisters"],
+        "arch_outdoor": ["towers adorned with plant life", "brass and copper filigree on buildings", "graceful, curved bridges", "wind-powered spires", "glass-domed public squares"],
+        "props_indoor": ["ornate astrolabe", "elegant fountain pen and inkwell", "wind-up automaton companion", "botanical illustration charts", "velvet chaise lounge"],
+        "props_outdoor": ["elegant airship moored to a tower", "brass telescope on a balcony", "automated flower cart", "public kinetic sculptures"],
+        "light": ["warm golden sunlight", "soft bioluminescent glow", "light filtering through stained glass", "dappled light through leaves"],
+        "texture": ["polished wood", "tarnished brass", "woven fabrics", "smooth ivory", "embossed leather", "mother-of-pearl inlays"],
+        "weather": ["gentle sun showers", "clear blue sky", "warm breeze with floating petals", "bright sunny day"],
+        "time": ["dawn", "golden hour", "clear sunlit day", "late afternoon"],
+        "fx": ["volumetric light shafts", "gentle lens flare", "floating sparkling motes", "soft bloom effect"]
+    },
+    "tropical_resort": {
+        "env_indoor": ["luxurious hotel suite with ocean view", "overwater bungalow interior", "spa room with orchid decorations", "thatched-roof restaurant", "aquarium lobby", "breezy cabana interior"],
+        "env_outdoor": ["white sand beach with turquoise water", "infinity pool overlooking the ocean", "palm tree-lined boardwalk", "secluded waterfall lagoon", "bustling beachside bar", "coral reef visible from a glass-bottom boat"],
+        "details_indoor": ["bowl of tropical fruits", "sheer white curtains billowing in the sea breeze", "seashell decorations", "fresh hibiscus flowers on a table", "a glass of cocktail with a tiny umbrella"],
+        "details_outdoor": ["hammock strung between two palm trees", "footprints in the wet sand", "gentle waves lapping the shore", "distant sailboats on the horizon", "colorful parrots in trees"],
+        "arch_indoor": ["open-air living space", "bamboo partition walls", "high vaulted ceilings with fans", "natural stone shower"],
+        "arch_outdoor": ["thatched roofing (palapa)", "wooden pier stretching into the sea", "outdoor tiki bar", "bungalows on stilts over the water"],
+        "props_indoor": ["wicker furniture", "four-poster bed with mosquito net", "minibar stocked with tropical juices", "folded towels shaped like swans"],
+        "props_outdoor": ["surfboard leaning against a hut", "lounge chairs and sun umbrella", "kayak pulled up on the beach", "tiki torches at dusk"],
+        "light": ["bright tropical sunlight", "golden sunset over the water", "soft lantern light at night", "light reflecting off the water's surface"],
+        "texture": ["fine white sand", "rough palm tree bark", "smooth wet stones", "woven rattan", "crisp linen sheets"],
+        "weather": ["clear sunny sky", "light tropical rain shower", "warm sea breeze", "high humidity haze"],
+        "time": ["sunrise over the ocean", "high noon on the beach", "sunset", "balmy evening"],
+        "fx": ["sparkling water reflections", "lens flare from the sun", "underwater caustics", "beautiful bokeh from distant lights"]
+    },
+    "cozy_academia": {
+        "env_indoor": ["grand library with endless bookshelves", "cozy professor's study with a fireplace", "potions classroom with bubbling cauldrons", "observatory with a large telescope", "natural history museum hall at night", "common room with plush armchairs"],
+        "env_outdoor": ["university courtyard with ivy-covered walls", "ancient campus grounds in autumn", "botanical greenhouse for magical plants", "cobblestone alley leading to a hidden bookshop", "college quad at twilight"],
+        "details_indoor": ["motes of dust dancing in a sunbeam", "floating, self-sorting books", "a cup of steaming tea on a stack of books", "handwritten notes with arcane diagrams", "quill pen in an inkpot"],
+        "details_outdoor": ["autumn leaves swirling in the wind", "gargoyles on the rooftops that seem to watch you", "a cat sleeping on a sun-warmed stone wall", "gas lamps flickering to life at dusk"],
+        "arch_indoor": ["towering vaulted ceilings", "secret passageway behind a bookshelf", "stained-glass windows depicting constellations", "rolling library ladders", "grand spiral staircase"],
+        "arch_outdoor": ["gothic arches and spires", "ivy-clad stone walls", "clock tower on campus", "wrought-iron gates", "ancient stone cloisters"],
+        "props_indoor": ["antique globe that slowly rotates", "bubbling beakers and alembics", "crystal ball showing misty images", "human skull on a desk (for study)", "celestial map (orrery)"],
+        "props_outdoor": ["weathered stone bench under a large oak tree", "bronze statue of a founder", "old-fashioned bicycle rack", "notice board with parchment announcements"],
+        "light": ["warm light from a fireplace", "sunlight filtering through large arched windows", "soft glow from a desk lamp", "mysterious glow from a magical object"],
+        "texture": ["aged paper", "dusty book covers", "worn leather armchairs", "dark polished wood", "cold stone floors", "tweed fabric"],
+        "weather": ["crisp autumn air", "gentle rain against the windowpane", "overcast sky", "first light snowfall on campus"],
+        "time": ["late afternoon light", "cozy evening", "deep night, lit by candlelight", "early morning mist"],
+        "fx": ["magical particles glittering in the air", "soft focus on background", "glowing runes", "subtle vignette effect"]
+    }
+    # --- NEW THEME PACKS END ---
 }
 
 # UIで使うテーマの選択肢リスト
@@ -187,4 +235,3 @@ EXCLUSIVE_TAG_GROUPS = {
         ["light leaks", "lens flare", "strobe light effect", "glitching effect on a screen"],
     ]
 }
-
