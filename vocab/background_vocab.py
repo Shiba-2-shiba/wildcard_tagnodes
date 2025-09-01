@@ -296,28 +296,64 @@ THEME_PACKS = {
 THEME_CHOICES = ["none", "おまかせ"] + sorted(list(THEME_PACKS.keys()))
 
 # ========================
-# 排他的な語彙グループ (変更なし)
+# 排他的な語彙グループ (更新済み)
 # ========================
 EXCLUSIVE_TAG_GROUPS = {
-    "light_type": [
-        ["window daylight filtering through dust", "golden-hour light", "sunlight filtering through leaves (komorebi)", "high noon light", "blinding sunlight"],
-        ["flickering candlelight ambience", "ethereal moonlit ambience", "cinematic film noir lighting", "glowing monitor light on a face", "neon-soaked street at night", "neon signage glow"],
-        ["streetlamp pools of light", "powerful searchlight beams", "blurry headlights in the rain", "car headlights and taillights"],
+    # 光源の種類 (自然光 / 人工光 / 幻想光)
+    "light_source_type": [
+        # --- 太陽光・自然光 ---
+        ["window daylight filtering through dust", "golden-hour light", "sunlight filtering through leaves (komorebi)", "high noon light", "blinding sunlight", "sunbeam breaking through clouds", "perfect sunny day"],
+        # --- 月光・夜の自然光 ---
+        ["ethereal moonlit ambience", "aurora borealis", "meteor shower"],
+        # --- 人工光 (現代・SF) ---
+        ["glowing monitor light on a face", "neon-soaked street at night", "colorful neon accent lights", "holographic glow", "fluorescent strip light", "strobe light effect", "blurry headlights in the rain", "streetlamp pools of light"],
+        # --- 炎・古典的な光 ---
+        ["flickering candlelight ambience", "soft fireplace glow", "paper lantern glow", "warm glow of paper lanterns", "lantern-lit lane at dusk"],
+        # --- 幻想的な光 ---
+        ["bioluminescent glow", "arcane glow from a spell", "light from glowing crystals", "magical particles floating", "floating particles of light"]
     ],
+
+    # 天候条件 (晴れ / 雨 / 雪 / 霧など)
     "weather_condition": [
-        ["clear sky", "pollen breeze"],
-        ["light drizzle", "heavy rain", "sun shower", "rain-soaked boulevard", "raindrops on a glass window", "wet pavement shine", "rain-soaked reflections"],
-        ["gentle snowfall", "violent blizzard", "snowy sidewalk"],
-        ["misty air", "thick morning fog", "hazy summer day"],
+        # --- 晴天系 ---
+        ["clear sky", "pollen breeze", "perfect sunny day", "bright daylight", "warm gentle breeze", "beautiful afterglow", "sunbeam breaking through clouds"],
+        # --- 雨天系 ---
+        ["light drizzle", "heavy rain", "sun shower", "rain-soaked boulevard", "raindrops on window", "wet pavement shine", "rain-soaked reflections", "thunderstorm with lightning"],
+        # --- 雪・氷結系 ---
+        ["gentle snowfall", "heavy blizzard", "snowy sidewalk", "diamond dust (ice crystals in air)", "frozen lake", "ancient glacier field"],
+        # --- 霧・霞系 ---
+        ["misty air", "thick morning fog", "hazy summer day", "bioluminescent fog", "hazy landscape"],
+        # --- 宇宙空間 (無天候) ---
+        ["calm vacuum", "endless night of space"]
     ],
+
+    # 時間帯 (昼 / 夜)
     "time_of_day": [
-        ["sunrise", "morning light", "high noon light", "golden hour", "afternoon sun"],
-        ["twilight", "blue hour", "deep midnight", "pre-dawn darkness", "late evening"],
+        # --- 昼間 ---
+        ["sunrise", "morning light", "high noon light", "golden hour", "afternoon sun", "bright daylight"],
+        # --- 夜間 ---
+        ["twilight", "blue hour", "deep midnight", "pre-dawn darkness", "late evening", "moonlit night", "starry night"]
     ],
+
+    # 特殊効果・光の表現
     "environmental_effects": [
+        # --- 光線・光芒 ---
         ["volumetric light rays", "dusty light rays", "sunbeams filtering through trees", "light shafts"],
-        ["light leaks", "lens flare", "strobe light effect", "glitching effect on a screen"],
+        # --- レンズ効果・人工的エフェクト ---
+        ["light leaks", "lens flare", "strobe light effect", "glitching effect on a screen", "chromatic aberration"],
+        # --- 粒子・浮遊物 ---
+        ["floating dust motes in sunbeam", "magical particles floating", "glowing motes of dust", "fire sparks and embers", "snow flurry in the air", "pollen breeze", "dandelion seeds drifting in the air"]
+    ],
+
+    # 場所の基本的な状態 (屋内 / 屋外)
+    # ※これはシステム上フィルタリングされますが、念のため定義
+    "location_base": [
+        # --- 屋内系環境 ---
+        BG_ENV_INDOOR,
+        # --- 屋外系環境 ---
+        BG_ENV_OUTDOOR
     ]
 }
+
 
 
