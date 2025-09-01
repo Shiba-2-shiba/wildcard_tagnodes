@@ -25,7 +25,7 @@ class MarkdownPromptAssemblerNode:
             "required": {
                 "overall_concept": ("STRING", {
                     "multiline": True,
-                    "default": "# 全体のコンセプトと品質 (Overall Concept & Quality)\nmasterpiece, best quality, ultra-detailed, photorealistic, 1girl, solo"
+                    "default": "# Overall Concept & Quality \nmasterpiece, best quality, ultra-detailed, photorealistic, 1girl, solo"
                 }),
                 "appearance_tags": ("STRING", {"multiline": False, "default": ""}),
                 "clothing_tags": ("STRING", {"multiline": False, "default": ""}),
@@ -67,11 +67,11 @@ class MarkdownPromptAssemblerNode:
         # --- 各セクションの文字列を構築 ---
         sections = {
             "concept": overall_concept.strip(),
-            "appearance": f"## 被写体 (Subject / Character)\n{appearance_tags.strip()}",
-            "clothing": f"## 服装 (Attire / Outfit)\n{clothing_tags.strip()}",
-            "pose": f"## 表情とポーズ (Expression & Pose)\n{', '.join(pose_parts)}",
-            "background": f"## 背景と設定 (Background & Setting)\n{', '.join(setting_parts)}",
-            "composition_lighting": f"## 構図とライティング (Composition & Lighting)\n{', '.join(composition_parts + lighting_parts)}"
+            "appearance": f"## Subject / Character \n{appearance_tags.strip()}",
+            "clothing": f"## Attire / Outfit \n{clothing_tags.strip()}",
+            "pose": f"## Expression & Pose \n{', '.join(pose_parts)}",
+            "background": f"## Background & Setting \n{', '.join(setting_parts)}",
+            "composition_lighting": f"## Composition & Lighting \n{', '.join(composition_parts + lighting_parts)}"
         }
 
         # --- 全てのセクションを結合 ---
@@ -94,4 +94,5 @@ NODE_CLASS_MAPPINGS = {
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "MarkdownPromptAssemblerNode": "Markdown Prompt Assembler"
+
 }
