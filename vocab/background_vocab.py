@@ -148,147 +148,327 @@ BG_FX = [
 # ========================
 # テーマパック (構造更新・拡充済み)
 # ========================
+# background_vocab.py に記述する THEME_PACKS の全体を置き換えてください
+
 THEME_PACKS = {
     "cyberpunk_futuristic": {
         "env_indoor": ["sleek starship interior", "space station viewport", "holographic command room", "cybernetic clinic", "hi-tech laboratory", "glowing data center", "grimy noodle bar", "back-alley cybernetics clinic"],
         "env_outdoor": ["futuristic metropolis", "cyberpunk street scene", "floating city in the clouds", "maglev transit hub", "off-world colony", "dystopian cityscape", "acid rain-slicked streets", "mega-corporation ziggurat"],
-        "details_indoor": ["floating UI panels", "robotic attendants", "cybernetic wires", "data streams in the air", "glitching computer screens"],
-        "details_outdoor": ["holographic billboards", "flying cars (spinners)", "glowing synth-wave patterns", "holographic koi fish swimming in the air", "glitching neon signs"],
         "texture": ["brushed alloy", "carbon fiber", "glass panels", "iridescent materials", "chrome plating", "glowing circuit patterns", "wet asphalt"],
         "light": ["neon rim light", "holographic glow", "fluorescent strip light", "lens flare from flying vehicle"],
         "arch_indoor": ["transparent skybridge", "sleek modular buildings"],
         "arch_outdoor": ["luminescent pylons", "data spine towers", "floating platforms", "endless skyscrapers"],
-        "props_indoor": ["hovering drone", "floating robot companion", "plasma weapon rack", "datajack terminal"],
-        "props_outdoor": ["automated food stall", "armored police vehicle"],
+        # ★★★ details/props を抽象的な指示に更新 ★★★
+        "details_indoor": [
+            "the **constant, restless flow of holographic data** streams",
+            "**glitching and distorted light** from aging electronics",
+            "the **sleek, reflective surfaces** of advanced cybernetics",
+            "a **network of cables and conduits** integrated into the architecture"
+        ],
+        "details_outdoor": [
+            "the **atmospheric haze** catching and diffusing the city's countless lights",
+            "**reflections of the neon-drenched city** in puddles of acid rain",
+            "the **overwhelming sense of scale** from towering mega-structures",
+            "**digital graffiti and advertisements** projected onto building facades"
+        ],
+        "props_indoor": [
+            "**utilitarian, function-over-form technology** common on the streets",
+            "**discarded or broken cybernetic parts** hinting at a recent conflict",
+            "**sleek, corporate-branded technology** that looks pristine and intimidating",
+            "a **makeshift setup** of cobbled-together electronics"
+        ],
+        "props_outdoor": [
+            "**automated drones** performing mundane tasks like delivery or surveillance",
+            "**objects that suggest a stark divide** between the rich and the poor",
+            "**public terminals and interfaces** integrated into the urban landscape",
+            "**heavily armored vehicles** that signify a corporate or state presence"
+        ],
     },
     "school": {
         "env_indoor": ["classroom with wooden desks", "sunlit library aisles", "science lab benches", "school gymnasium", "school cafeteria", "empty hallway with lockers", "music room", "art room"],
         "env_outdoor": ["school courtyard under cherry blossoms", "track field bleachers", "school gate", "school rooftop", "basketball court at sunset", "swimming pool for lessons"],
-        "details_indoor": ["chalk dust in air", "posters on walls", "trophy cabinet", "bento lunch on desk", "scattered textbooks", "backpacks hanging on hooks", "sunlight filtering through classroom window"],
-        "details_outdoor": ["paper airplane flying", "school bulletin board", "sound of a school bell", "students walking home"],
         "texture": ["scuffed linoleum", "polished gym floor", "worn wooden desks", "graffiti on locker doors"],
         "light": ["fluorescent classroom lighting", "sunlight through large windows", "late afternoon sun on the field"],
         "arch_indoor": ["corridor with lockers", "stairwell with afternoon light"],
         "arch_outdoor": ["brick facade", "school bell tower", "chain-link fence around sports field"],
-        "props_indoor": ["school desk and chair", "blackboard and chalk", "anatomical model", "piano"],
-        "props_outdoor": ["basketball hoop", "soccer goal", "bicycle parking area"],
+        # ★★★ details/props を抽象的な指示に更新 ★★★
+        "details_indoor": [
+            "**sunlight streaming through large windows**, illuminating floating dust motes",
+            "**personal touches and doodles** left behind on desks and lockers",
+            "the **organized chaos** of a classroom in active use",
+            "a sense of **quiet nostalgia and memories** lingering in the empty spaces"
+        ],
+        "details_outdoor": [
+            "the **play of shadows** on the ground in the late afternoon",
+            "**evidence of the changing seasons** on the school grounds",
+            "the **faded lines and worn surfaces** of a well-used sports court",
+            "a **gentle breeze** carrying the sounds of distant activity"
+        ],
+        "props_indoor": [
+            "**materials for learning and creativity**, arranged on desks",
+            "**evidence of extracurricular activities** and student passions",
+            "**items that show the passage of a long school day**",
+            "**trophies and awards** that speak to the school's history and pride"
+        ],
+        "props_outdoor": [
+            "**sports equipment** left out as if a game just ended",
+            "**items forgotten by students**, telling a small story",
+            "**bicycles neatly parked**, suggesting the daily commute of students",
+            "**seasonal decorations** for a school event or festival"
+        ],
     },
     "fantasy": {
         "env_indoor": ["wizard tower study", "crystal conservatory", "ancient library", "dragon's hoard cavern", "throne room of a castle", "alchemist's laboratory", "enchanted forest cottage", "elven hall", "dwarven forge"],
         "env_outdoor": ["floating islands in sky", "enchanted forest with glowing mushrooms", "crystal cavern", "moonlit meadow", "fairy ring in a forest", "ancient ruins on a misty hill", "dragon's peak with lava flow"],
-        "details_indoor": ["magical runes glowing on walls", "floating motes of light", "arcane artifacts on shelves", "potion bottles bubbling"],
-        "details_outdoor": ["magical glowing flora", "glowing crystals", "fairy dust in the air", "a distant dragon in the sky"],
         "texture": ["iridescent crystal", "mossy stone", "ancient runes on rock", "dragon scales", "mithril silver"],
         "light": ["ethereal moonlight", "bioluminescent glow", "arcane glow from a spell", "light from glowing crystals"],
         "arch_indoor": ["ancient stone archways", "spires of a wizard's tower", "crystal formations"],
         "arch_outdoor": ["ruined castle walls", "elven tree-houses", "bridge made of light"],
-        "props_indoor": ["glowing orb", "spellbook on a pedestal", "magical scepter", "treasure chest"],
-        "props_outdoor": ["ancient monolith", "glowing sword stuck in a stone"],
+        # ★★★ details/props を抽象的な指示に更新 ★★★
+        "details_indoor": [
+            "an **ambient, magical glow** emanating from an unseen source",
+            "the air **shimmering with raw magical energy**",
+            "**ancient, intricate carvings** that tell a forgotten story",
+            "**fantastical flora** integrated into the architecture"
+        ],
+        "details_outdoor": [
+            "**particles of light or magic** drifting gently in the air",
+            "the **colossal scale of ancient ruins** or natural formations",
+            "an **otherworldly quality to the natural light**",
+            "**impossible geography** that defies the laws of physics"
+        ],
+        "props_indoor": [
+            "**artifacts of immense power or ancient knowledge**",
+            "**ingredients and tools for alchemy or spellcrafting**",
+            "**objects of regal or divine significance**",
+            "a **legendary weapon or item**, presented with reverence"
+        ],
+        "props_outdoor": [
+            "**objects that serve as a source of immense magical power**",
+            "**remains of a great battle** from a bygone era",
+            "**offerings left for ancient gods or spirits**",
+            "**a path marked by mystical stones or lights**"
+        ],
     },
     "gothic_horror": {
         "env_indoor": ["haunted mansion hallway", "dusty gothic library", "crypt interior", "abandoned chapel", "laboratory of a mad scientist"],
         "env_outdoor": ["misty graveyard at midnight", "crumbling abbey ruins", "dark forest with twisted trees", "lonely cliffside castle"],
-        "details_indoor": ["flickering candelabras", "cobwebs in corners", "ornate silver mirror with no reflection", "bloodstains on the floor", "portraits with watching eyes"],
-        "details_outdoor": ["bats flying against the full moon", "thick fog on the ground", "sound of a lone wolf howling", "lightning illuminating the scene"],
         "texture": ["aged stone", "tattered velvet", "cold iron bars", "rotting wood", "dusty surfaces"],
         "light": ["dim candlelight", "pale moonlight filtering through grimy windows", "lightning flashes", "single oil lamp"],
         "arch_indoor": ["pointed arches", "stone spiral staircase", "gargoyles looking down"],
         "arch_outdoor": ["flying buttresses", "cemetery gates", "crypt entrance"],
-        "props_indoor": ["antique grandfather clock stopped at midnight", "skull on a book", "organ with dusty keys", "surgical tools on a tray"],
-        "props_outdoor": ["weathered tombstones", "empty coffin", "crow perched on a branch"],
+        # ★★★ details/props を抽象的な指示に更新 ★★★
+        "details_indoor": [
+            "**deep, imposing shadows** that seem to hide something",
+            "a **thick layer of dust** covering everything, disturbed in one spot",
+            "the feeling of being **watched by portraits** on the wall",
+            "a **chilling draft** from an unseen source"
+        ],
+        "details_outdoor": [
+            "**twisted, skeletal trees** silhouetted against a pale moon",
+            "a **dense, rolling fog** that obscures the ground",
+            "the **ominous shapes of crumbling ruins** in the darkness",
+            "an **unnatural silence** in the air"
+        ],
+        "props_indoor": [
+            "**objects suggesting a dark and disturbing history**",
+            "**items that have been left in a hurry**, as if fleeing",
+            "**scientific or occult instruments** for a sinister purpose",
+            "a **single object that is unnervingly out of place**"
+        ],
+        "props_outdoor": [
+            "**weathered tombstones, some overturned or broken**",
+            "**tools for digging**, left abandoned",
+            "a **solitary, flickering lantern** suggesting a lone presence",
+            "**personal belongings lost or discarded** in the mud"
+        ],
     },
-    # --- NEW THEME PACKS START ---
     "solapunk_art_nouveau": {
         "env_indoor": ["sun-drenched atrium with lush greenery", "bio-luminescent library", "hydroponic garden room", "ornate conservatory with brass mechanics", "artist's workshop with stained-glass windows", "elegant tea room with floral motifs"],
         "env_outdoor": ["city with verdant skyscrapers", "floating botanical islands", "solar-sail shipyard at dawn", "market street with clockwork vendors", "sweeping organic-shaped bridges over a canal", "community rooftop garden"],
-        "details_indoor": ["intricate brass clockwork mechanisms", "flowing silk banners with nature patterns", "holographic plant displays", "potted ferns and flowers", "sunlight filtering through patterned glass"],
-        "details_outdoor": ["stained-glass solar panels", "flocks of ornithopters in the sky", "pollen-like energy particles drifting in the air", "vines coiling around lampposts", "glowing moss pathways"],
-        "arch_indoor": ["art nouveau arches", "spiraling staircases around a giant tree", "geodesic dome skylights", "curving wooden beams", "filigree banisters"],
-        "arch_outdoor": ["towers adorned with plant life", "brass and copper filigree on buildings", "graceful, curved bridges", "wind-powered spires", "glass-domed public squares"],
-        "props_indoor": ["ornate astrolabe", "elegant fountain pen and inkwell", "wind-up automaton companion", "botanical illustration charts", "velvet chaise lounge"],
-        "props_outdoor": ["elegant airship moored to a tower", "brass telescope on a balcony", "automated flower cart", "public kinetic sculptures"],
         "light": ["warm golden sunlight", "soft bioluminescent glow", "light filtering through stained glass", "dappled light through leaves"],
         "texture": ["polished wood", "tarnished brass", "woven fabrics", "smooth ivory", "embossed leather", "mother-of-pearl inlays"],
-        "weather": ["gentle sun showers", "clear blue sky", "warm breeze with floating petals", "bright sunny day"],
-        "time": ["dawn", "golden hour", "clear sunlit day", "late afternoon"],
-        "fx": ["volumetric light shafts", "gentle lens flare", "floating sparkling motes", "soft bloom effect"]
+        # ★★★ details/props を抽象的な指示に更新 ★★★
+        "details_indoor": [
+            "**intricate, flowing lines** inspired by nature in the architecture",
+            "the **harmonious integration of plant life** and living space",
+            "the **gentle, rhythmic movement** of clockwork mechanisms",
+            "**sunlight creating beautiful patterns** as it passes through stained glass"
+        ],
+        "details_outdoor": [
+            "the **elegant fusion of technology and nature**",
+            "a **sense of community and sustainable living**",
+            "the **play of light on brass and copper** architectural details",
+            "**graceful, flowing forms** in bridges, buildings, and vehicles"
+        ],
+        "props_indoor": [
+            "**beautifully crafted objects that are both artistic and functional**",
+            "**items related to botany, art, or astronomy**",
+            "**elegant furniture with organic, curved lines**",
+            "**automatons designed with artistic flair**, performing helpful tasks"
+        ],
+        "props_outdoor": [
+            "**ornate, beautifully designed public transportation**, like airships or trams",
+            "**community gardens and shared spaces** for public enjoyment",
+            "**kinetic sculptures powered by wind or solar energy**",
+            "**market stalls selling handcrafted goods and organic produce**"
+        ],
     },
     "tropical_resort": {
         "env_indoor": ["luxurious hotel suite with ocean view", "overwater bungalow interior", "spa room with orchid decorations", "thatched-roof restaurant", "aquarium lobby", "breezy cabana interior"],
         "env_outdoor": ["white sand beach with turquoise water", "infinity pool overlooking the ocean", "palm tree-lined boardwalk", "secluded waterfall lagoon", "bustling beachside bar", "coral reef visible from a glass-bottom boat"],
-        "details_indoor": ["bowl of tropical fruits", "sheer white curtains billowing in the sea breeze", "seashell decorations", "fresh hibiscus flowers on a table", "a glass of cocktail with a tiny umbrella"],
-        "details_outdoor": ["hammock strung between two palm trees", "footprints in the wet sand", "gentle waves lapping the shore", "distant sailboats on the horizon", "colorful parrots in trees"],
-        "arch_indoor": ["open-air living space", "bamboo partition walls", "high vaulted ceilings with fans", "natural stone shower"],
-        "arch_outdoor": ["thatched roofing (palapa)", "wooden pier stretching into the sea", "outdoor tiki bar", "bungalows on stilts over the water"],
-        "props_indoor": ["wicker furniture", "four-poster bed with mosquito net", "minibar stocked with tropical juices", "folded towels shaped like swans"],
-        "props_outdoor": ["surfboard leaning against a hut", "lounge chairs and sun umbrella", "kayak pulled up on the beach", "tiki torches at dusk"],
         "light": ["bright tropical sunlight", "golden sunset over the water", "soft lantern light at night", "light reflecting off the water's surface"],
         "texture": ["fine white sand", "rough palm tree bark", "smooth wet stones", "woven rattan", "crisp linen sheets"],
-        "weather": ["clear sunny sky", "light tropical rain shower", "warm sea breeze", "high humidity haze"],
-        "time": ["sunrise over the ocean", "high noon on the beach", "sunset", "balmy evening"],
-        "fx": ["sparkling water reflections", "lens flare from the sun", "underwater caustics", "beautiful bokeh from distant lights"]
+        # ★★★ details/props を抽象的な指示に更新 ★★★
+        "details_indoor": [
+            "a **gentle sea breeze** causing sheer curtains to billow",
+            "the **clean, refreshing scent** of tropical flowers and salt air",
+            "the **seamless transition** between indoor and outdoor space",
+            "**details made from natural materials** like wood, stone, and shell"
+        ],
+        "details_outdoor": [
+            "the **crystal-clear quality of the turquoise water**",
+            "the **soft, warm texture of the white sand**",
+            "the **sound of gentle waves** lapping the shore",
+            "the **vibrant colors of tropical flora** against the blue sky"
+        ],
+        "props_indoor": [
+            "**items that invite relaxation and comfort**",
+            "**luxurious amenities** for a perfect vacation",
+            "a **refreshing tropical drink or fresh fruit**, beautifully presented",
+            "**furniture made from light, natural materials** like wicker or bamboo"
+        ],
+        "props_outdoor": [
+            "**equipment for enjoying the water**, like surfboards or kayaks",
+            "a **perfectly placed spot to relax and enjoy the view**",
+            "**tiki torches or lanterns that create a romantic mood** at dusk",
+            "**objects that suggest leisure and carefree living**"
+        ],
     },
     "cozy_academia": {
         "env_indoor": ["grand library with endless bookshelves", "cozy professor's study with a fireplace", "potions classroom with bubbling cauldrons", "observatory with a large telescope", "natural history museum hall at night", "common room with plush armchairs"],
         "env_outdoor": ["university courtyard with ivy-covered walls", "ancient campus grounds in autumn", "botanical greenhouse for magical plants", "cobblestone alley leading to a hidden bookshop", "college quad at twilight"],
-        "details_indoor": ["motes of dust dancing in a sunbeam", "floating, self-sorting books", "a cup of steaming tea on a stack of books", "handwritten notes with arcane diagrams", "quill pen in an inkpot"],
-        "details_outdoor": ["autumn leaves swirling in the wind", "gargoyles on the rooftops that seem to watch you", "a cat sleeping on a sun-warmed stone wall", "gas lamps flickering to life at dusk"],
-        "arch_indoor": ["towering vaulted ceilings", "secret passageway behind a bookshelf", "stained-glass windows depicting constellations", "rolling library ladders", "grand spiral staircase"],
-        "arch_outdoor": ["gothic arches and spires", "ivy-clad stone walls", "clock tower on campus", "wrought-iron gates", "ancient stone cloisters"],
-        "props_indoor": ["antique globe that slowly rotates", "bubbling beakers and alembics", "crystal ball showing misty images", "human skull on a desk (for study)", "celestial map (orrery)"],
-        "props_outdoor": ["weathered stone bench under a large oak tree", "bronze statue of a founder", "old-fashioned bicycle rack", "notice board with parchment announcements"],
         "light": ["warm light from a fireplace", "sunlight filtering through large arched windows", "soft glow from a desk lamp", "mysterious glow from a magical object"],
         "texture": ["aged paper", "dusty book covers", "worn leather armchairs", "dark polished wood", "cold stone floors", "tweed fabric"],
-        "weather": ["crisp autumn air", "gentle rain against the windowpane", "overcast sky", "first light snowfall on campus"],
-        "time": ["late afternoon light", "cozy evening", "deep night, lit by candlelight", "early morning mist"],
-        "fx": ["magical particles glittering in the air", "soft focus on background", "glowing runes", "subtle vignette effect"]
+        # ★★★ details/props を抽象的な指示に更新 ★★★
+        "details_indoor": [
+            "the **smell of old books, woodsmoke, and brewing tea**",
+            "the **comforting silence of a library**, broken only by turning pages",
+            "**motes of dust dancing in a sunbeam** filtering through a tall window",
+            "a **sense of deep history and accumulated knowledge**"
+        ],
+        "details_outdoor": [
+            "the **crisp feeling of autumn air**",
+            "**ivy clinging to ancient stone walls**",
+            "the **sound of distant bells or a choir**",
+            "the **warm, inviting glow** from windows at twilight"
+        ],
+        "props_indoor": [
+            "**piles and shelves of books**, suggesting a love of reading and research",
+            "**objects related to scholarly pursuits** like astronomy, history, or botany",
+            "a **comfortable place to sit and read** for hours",
+            "**items that suggest a touch of magic or mystery** hidden within the academic setting"
+        ],
+        "props_outdoor": [
+            "**architectural features that inspire a sense of wonder and history**",
+            "a **quiet, secluded bench** perfect for contemplation",
+            "**items that hint at the traditions and ceremonies** of the institution",
+            "**seasonal elements**, like fallen leaves or a light dusting of snow"
+        ],
     },
-        "wafu_serenity_nature": {
+    "wafu_serenity_nature": {
         "env_indoor": ["shoji screen room with soft light", "traditional tea room (chashitsu)", "ryokan room with a cypress bath", "samurai residence study room", "veranda with a moon-viewing platform"],
         "env_outdoor": ["dry landscape garden (karesansui)", "bamboo grove path with sunlight filtering through", "stone steps lined with cedar trees", "Japanese garden with a koi pond", "castle town at dusk"],
-        "details_indoor": ["a hanging scroll and flower arrangement in an alcove", "steam quietly rising from an iron kettle", "beautiful maki-e lacquerware box", "soft light from a paper lantern"],
-        "details_outdoor": ["water flowing from a stone basin", "wind chime tinkling in the breeze", "moss wet with rain", "scattering autumn leaves"],
-        "arch_indoor": ["lattice doors", "transom window carvings (ranma)", "circular window", "staggered shelves"],
-        "arch_outdoor": ["gently curved temple roof", "arched drum bridge", "stone lanterns", "white walls and stone base of a castle"],
-        "props_indoor": ["Japanese umbrella (wagasa)", "folding fan (sensu)", "koto instrument", "Go board"],
-        "props_outdoor": ["deer-scarer fountain (shishi-odoshi)", "bench with a large parasol", "ceremonial banners", "red lanterns of a food stall"],
         "light": ["soft light through shoji paper screens", "sunlight filtering through trees (komorebi)", "warm glow of paper lanterns"],
         "texture": ["tatami mat texture", "plastered wall", "polished wooden floor", "washi paper texture"],
-        "weather": ["calm indian summer day", "clear may weather", "gentle spring rain", "light mist"],
-        "time": ["dawn", "twilight (tasogare)", "moonlit night"],
-        "fx": ["hazy landscape", "reflection on the water surface", "soft light diffusion"]
+        # ★★★ details/props を抽象的な指示に更新 ★★★
+        "details_indoor": [
+            "the **play of light and shadow** through a lattice screen",
+            "a **perfectly framed view of the garden** from inside",
+            "an atmosphere of **tranquility, simplicity, and wabi-sabi**",
+            "the **scent of tatami, hinoki wood, and green tea**"
+        ],
+        "details_outdoor": [
+            "the **sound of a shishi-odoshi** (deer-scarer) or a gentle stream",
+            "the **feeling of moss underfoot** on ancient stones",
+            "the **dance of light and shadow** in a bamboo grove",
+            "a **sense of deep peace and harmony with nature**"
+        ],
+        "props_indoor": [
+            "a **single, beautiful object, perfectly placed** in an alcove (tokonoma)",
+            "**items for a traditional art or ceremony**, like tea ceremony or calligraphy",
+            "**minimalist furniture** that emphasizes the beauty of the space",
+            "**objects that reflect a deep appreciation for nature and craftsmanship**"
+        ],
+        "props_outdoor": [
+            "**stones and sand raked into patterns** that evoke water and mountains",
+            "**elements designed to blend seamlessly with the natural landscape**",
+            "a **place for quiet contemplation and meditation**",
+            "**objects that change beautifully with the seasons**"
+        ],
     },
     "space_opera": {
         "env_indoor": ["spaceship bridge with a panoramic viewport", "gleaming white space station corridor", "emperor's throne room on a capital planet", "bustling alien cantina", "holographic library"],
         "env_outdoor": ["alien futuristic city skyline", "spaceport with departing and arriving ships", "lunar surface with twin suns", "palace's zero-gravity garden", "crystalline asteroid belt"],
-        "details_indoor": ["floating control panels", "energy lines flowing along walls", "stars streaking past the window", "sculpture made of unknown minerals"],
-        "details_outdoor": ["aurora shimmering in the sky", "planetary rings", "distant nebula", "giant floating creatures"],
-        "arch_indoor": ["transparent tube walkways", "anti-gravity staircases", "massive domed ceilings"],
-        "arch_outdoor": ["elegant skyscrapers piercing the heavens", "space elevator connecting to orbit", "massive ring-shaped habitat"],
-        "props_indoor": ["floating companion droid", "energy sword", "holo-projector displaying a star chart"],
-        "props_outdoor": ["streamlined personal speeder", "colossal battleship", "energy shield generator"],
         "light": ["harsh light from a star", "blueish glow from engines", "colorful light from a nebula"],
         "texture": ["polished metal armor", "luminous glass panels", "smooth nano-materials"],
-        "weather": ["storm with methane rain", "calm vacuum", "shimmer of solar wind"],
-        "time": ["endless night of space", "planetrise"],
-        "fx": ["light streaks from warp travel", "lens flare", "starfield"]
+        # ★★★ details/props を抽象的な指示に更新 ★★★
+        "details_indoor": [
+            "a **panoramic view of stars, planets, or nebulae** through a large window",
+            "the **low, constant hum of a starship's engine** or life support",
+            "the **clean, sterile look of advanced technology**",
+            "**holographic displays and interfaces** integrated everywhere"
+        ],
+        "details_outdoor": [
+            "the **breathtaking scale of alien megastructures** or celestial phenomena",
+            "the **sight of multiple moons or suns** in the sky",
+            "the **vibrant, chaotic energy** of a multicultural spaceport",
+            "an **awe-inspiring view of a fleet of starships**"
+        ],
+        "props_indoor": [
+            "**advanced technology for command, control, and communication**",
+            "**items that show the diversity of alien species** present",
+            "**personal belongings that hint at a life spent traveling the stars**",
+            "**symbols of power and authority** within a galactic empire or federation"
+        ],
+        "props_outdoor": [
+            "**a variety of starships, from sleek fighters to massive cruisers**",
+            "**technology for terraforming or resource extraction on an alien world**",
+            "**monuments or statues commemorating a great historical event**",
+            "**defensive installations**, like energy shields or weapon platforms"
+        ],
     },
     "desert_oasis_arabian_nights": {
         "env_indoor": ["palace hall adorned with mosaic tiles", "throne room with fragrant incense smoke", "library with countless scrolls", "interior of a luxurious tent with rich textiles", "alchemist's hidden workshop"],
         "env_outdoor": ["vast sun-drenched sand dunes", "vibrant marketplace (souk) with colorful goods", "palace courtyard with a fountain", "secret oasis with a waterfall", "ancient ruins half-buried in sand"],
-        "details_indoor": ["geometric tilework (zellige) on walls", "Persian rugs and cushions on the floor", "light filtering through latticework lamps", "piles of gold and treasures"],
-        "details_outdoor": ["awnings fluttering in the wind", "a caravan of camels", "piles of spices in the market", "a distant mirage"],
-        "arch_indoor": ["pointed arches (ogive arches)", "intricate wooden lattice windows (mashrabiya)", "domed ceilings"],
-        "arch_outdoor": ["soaring minarets", "fortified city walls (kasbah)", "white-domed palace"],
-        "props_indoor": ["hookah pipe", "scimitar sword", "magic lamp", "parchment star chart"],
-        "props_outdoor": ["magic carpet", "market stalls", "large earthenware jars", "hammock in the shade of a palm tree"],
         "light": ["strong desert sunlight", "deep blue night sky full of stars", "flickering light of lanterns"],
         "texture": ["fine sand", "glossy glazed tiles", "densely woven carpets", "hammered metalwork"],
-        "weather": ["cloudless clear sky", "a distant sandstorm", "scorching air"],
-        "time": ["high noon sun", "magic hour after sunset", "starry night"],
-        "fx": ["shimmering heat haze", "glow from a magical object", "brilliant starlight"]
+        # ★★★ details/props を抽象的な指示に更新 ★★★
+        "details_indoor": [
+            "**intricate geometric patterns** (zellige) that create a mesmerizing effect",
+            "**cool air and the gentle sound of water**, a stark contrast to the outside heat",
+            "the **rich aroma of spices, incense, and perfumes**",
+            "**ornate archways and latticework** that create beautiful, complex shadows"
+        ],
+        "details_outdoor": [
+            "the **shimmering heat haze** rising from the endless sand dunes",
+            "the **vibrant, chaotic energy of a bustling marketplace** (souk)",
+            "the **brilliant, dazzling display of stars** in a clear desert night sky",
+            "a **sense of ancient history and forgotten magic** among the ruins"
+        ],
+        "props_indoor": [
+            "**luxurious textiles, like silk cushions and elaborate carpets**, for comfort and beauty",
+            "**items that suggest wealth, trade, and a long history of storytelling**",
+            "**objects related to magic, alchemy, or astronomy**",
+            "a **source of cool, clean water**, the most valuable treasure in the desert"
+        ],
+        "props_outdoor": [
+            "**elements that provide shade and relief from the intense sun**",
+            "**goods from all corners of the world**, hinting at a crossroads of trade",
+            "**evidence of a hidden, magical world** just beneath the surface",
+            "**items needed for a long journey across the vast desert**"
+        ],
     }
-    # --- NEW THEME PACKS END ---
 }
 
 # UIで使うテーマの選択肢リスト
@@ -353,6 +533,7 @@ EXCLUSIVE_TAG_GROUPS = {
         BG_ENV_OUTDOOR
     ]
 }
+
 
 
 
