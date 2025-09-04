@@ -44,7 +44,7 @@ BG_ENV_OUTDOOR = [
 
 # --- ディテール (DETAILS) ---
 # --- ディテール (生成指示カテゴリ) ---
-BG_DETAILS_INDOOR_GENERATIVE = [
+BG_DETAILS_INDOOR = [
     "a delicate detail **highlighted by a soft light**",
     "the **interplay of light and shadow** creating intricate patterns on surfaces",
     "a subtle imperfection that adds a touch of **realism and charm**",
@@ -54,7 +54,7 @@ BG_DETAILS_INDOOR_GENERATIVE = [
     "a single, **eye-catching detail** that serves as a focal point",
     "a subtle imperfection that adds realism"
 ]
-BG_DETAILS_OUTDOOR_GENERATIVE = [
+BG_DETAILS_OUTDOOR = [
     "the way **sunlight filters through leaves or clouds**, creating dappled light",
     "the **texture of the ground** revealed by raking light (e.g., wet cobblestones, dry cracked earth)",
     "a small detail that hints at the history of this location",
@@ -533,6 +533,7 @@ EXCLUSIVE_TAG_GROUPS = {
         BG_ENV_OUTDOOR
     ]
 }
+
 
 
 
