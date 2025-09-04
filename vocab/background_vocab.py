@@ -43,28 +43,23 @@ BG_ENV_OUTDOOR = [
 ]
 
 # --- ディテール (DETAILS) ---
-BG_DETAILS_INDOOR = [
-    "scattered rose petals", "sheer curtains blowing in a breeze", "hanging crystal beads", "string lights illuminating the darkness",
-    "perfume bottles on a vanity table", "pearls scattered on a table", "folded lingerie on a bed", "long wall shadows",
-    "floating dust motes in sunbeam", "shoji screens", "calligraphy scrolls", "tatami mats on the floor",
-    "coffee steam rising", "whiskey glass on a table with melting ice", "worn books on a shelf", "dusty vinyl records", "scattered playing cards",
-    "crumpled clothes on the floor", "potted plants in the foreground", "billowing smoke from an incense stick", "cracked plaster wall",
-    "steamy mirror with water streaks", "flickering fireplace", "ornate rug on wooden floor", "grandfather clock ticking",
-    # New additions
-    "a single feather drifting down", "spilled ink on a wooden desk", "glowing embers in a hearth", "scattered blueprints and schematics",
-    "reflection in a polished floor", "glowing runes etched on a wall", "floating data screens", "sand trickling from a crack in the ceiling",
-    "a katana displayed on a stand", "a single chess piece on a board", "cobwebs in a corner", "water dripping from a pipe"
+# --- ディテール (生成指示カテゴリ) ---
+BG_DETAILS_INDOOR_GENERATIVE = [
+    "a delicate detail **highlighted by a soft light**",
+    "the **interplay of light and shadow** creating intricate patterns on surfaces",
+    "a subtle imperfection that adds a touch of **realism and charm**",
+    "**reflections on a polished surface** that add depth and complexity",
+    "elegant signs of **aging and history**, like patina or worn velvet",
+    "subtle hints of the atmosphere, like **rising steam or condensation**",
+    "a single, **eye-catching detail** that serves as a focal point",
+    "a subtle imperfection that adds realism"
 ]
-BG_DETAILS_OUTDOOR = [
-    "raindrops on a glass window", "puddles reflecting neon lights", "steaming manhole cover", "falling cherry blossom petals",
-    "vibrant autumn leaves swirling in the wind", "paper lanterns glowing warmly", "graffiti on a brick wall", "rain-soaked reflections",
-    "fireflies glowing at dusk", "pigeons taking flight from a square", "wet leaves clinging to pavement", "distant heat haze shimmering",
-    "dewdrops on a spiderweb", "dandelion seeds drifting in the air",
-    # New additions
-    "colorful prayer flags fluttering in the wind", "distant smoke signal on the horizon", "intricate frost patterns on a branch",
-    "a lone kite high in the sky", "contrail of a departing starship", "glowing spores floating in the air",
-    "cherry blossom petals floating on a stream", "ripples in a pond from a thrown stone", "footprints leading away in the snow",
-    "a single boat moored at a pier", "a forgotten scarecrow in a field", "wind rustling through tall grass"
+BG_DETAILS_OUTDOOR_GENERATIVE = [
+    "the way **sunlight filters through leaves or clouds**, creating dappled light",
+    "the **texture of the ground** revealed by raking light (e.g., wet cobblestones, dry cracked earth)",
+    "a small detail that hints at the history of this location",
+    "subtle movements in nature, like **wind rustling through grass** or ripples on water",
+    "man-made objects slowly being reclaimed by nature"
 ]
 
 # --- 建築/構造 (ARCH) ---
@@ -86,17 +81,21 @@ BG_ARCH_OUTDOOR = [
 
 # --- 小道具 (PROPS) ---
 BG_PROPS_INDOOR = [
-    "old CRT monitor displaying static", "vintage jukebox", "stacked books on a table", "record player spinning silently", "tea set on a lacquered tray",
-    "potted bonsai tree", "candlestick with dripping wax", "crystal ball on a stand", "antique globe", "manual typewriter",
-    "artist's easel with an unfinished painting", "birdcage, empty", "go board with stones", "holographic map table", "ornate brass telescope",
-    "alembics and beakers bubbling", "weapons rack with swords", "spinning wheel and loom", "elaborate celestial model (orrery)"
+    "an **aesthetically pleasing arrangement** of related items",
+    "a **deliberate, minimalist placement** of a few beautiful objects",
+    "an organic, **lived-in clutter** that feels natural and inviting",
+    "functional items that also possess an **artistic or elegant design**",
+    "a single, significant object that is the **center of the scene's narrative**",
+    "objects that **harmoniously blend** with the surrounding environment's color and style",
+    "props that **cast interesting shadows** or reflect the ambient light"
 ]
 BG_PROPS_OUTDOOR = [
-    "bicycle leaning against a wall", "empty soda cans rolling on the ground", "abandoned shopping cart", "old vending machine humming",
-    "wooden crates stacked in an alley", "old street lamp casting a pool of light", "mailbox by the road", "dirty garbage cans",
-    "weathered park bench", "swing set moving gently in the breeze", "broken swings", "colorful kites tangled in a tree",
-    "laundry on a clothesline", "forgotten tricycle", "street food stall", "newspaper stand", "fire hydrant", "bird bath", "wind chime",
-    "ornate water fountain", "ancient sundial", "hovering cargo drone", "signpost at a crossroads", "weather vane on a roof"
+    "items that seem **intentionally placed for a specific purpose** or ritual",
+    "a comfortable setup that **invites someone to rest** (e.g., a bench with a forgotten book, a picnic blanket)",
+    "remnants of a celebration or gathering, suggesting a **recent happy memory**",
+    "objects that create a **stark but beautiful contrast** with the natural environment",
+    "a trail of small items that **guides the eye** through the scene",
+    "seasonal decorations that **enhance the feeling of the time of year**"
 ]
 
 # --- 共通カテゴリ (分割不要) ---
@@ -354,6 +353,7 @@ EXCLUSIVE_TAG_GROUPS = {
         BG_ENV_OUTDOOR
     ]
 }
+
 
 
 
