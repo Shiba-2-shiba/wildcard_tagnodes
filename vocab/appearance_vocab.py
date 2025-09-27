@@ -1,179 +1,405 @@
 # vocab/appearance_vocab.py
-# 統合語彙: 体型 + 胸サイズ + 髪（長さ/質感/スタイル/前髪・分け目/色/色ミックス）+ テーマバイアス
-# - 「美人寄り」の審美語彙をベースに、kawaii テーマへ petite 系（childlike 等）を集約
-# - 髪は「単色 or ミックス」を排他的に選択しやすいよう代表値を厳選
-# - 胸サイズは段階 + 付随属性（NSFW 寄りは別確率）で制御
+# 外見（体・肌・顔・髪）タグ用語彙の刷新版
 
-# ===== Body（体型） =====
-BODY_BASE = [
-    # 美人寄り・審美的で中立的な語彙
-    "slender yet toned",
-    "graceful silhouette",
-    "elegant curves",
-    "balanced physique",
-    "hourglass figure",
-    "model-like proportions",
-    "petite yet elegant",
-    "tall and graceful",
+# ===== Body =====
+BODY_SHAPES = [
+    "slender frame",
+    "athletic build",
+    "graceful curves",
+    "petite frame",
+    "statuesque form",
+    "hourglass silhouette",
+    "softly rounded figure",
+    "toned dancer physique",
+    "delicate build",
 ]
 
 BODY_DETAILS = [
     "defined waistline",
     "long elegant legs",
-    "feminine shoulders",
-    "subtle curves",
-    "radiant posture",
+    "sculpted abs",
+    "soft shoulders",
+    "delicate collarbones",
+    "balletic posture",
+    "lithe limbs",
+    "graceful neck",
 ]
 
-# ===== Bust（胸） =====
-# 段階表現（過度なスラング/扇情的俗語は避けた表現）
-BUST_SIZES = [
-    "flat chest",
-    "small breasts",
-    "medium breasts",
-    "large breasts",
-    "extra large breasts",
-]
+SKIN_DETAILS = {
+    "tones": [
+        "porcelain skin",
+        "pale rosy skin",
+        "fair neutral skin",
+        "warm beige skin",
+        "golden olive skin",
+        "sun-kissed tan skin",
+        "bronzed skin",
+        "deep cocoa skin",
+        "rich ebony skin",
+    ],
+    "features": [
+        "dusting of freckles",
+        "delicate freckles",
+        "rosy cheeks",
+        "soft blush",
+        "beauty mark below eye",
+        "beauty mark near lips",
+        "subtle sun spots",
+        "mole on cheek",
+    ],
+    "finishes": [
+        "dewy complexion",
+        "luminous glow",
+        "velvety smooth skin",
+        "matte porcelain finish",
+        "radiant sheen",
+    ],
+}
 
-# 付随属性（ソフト系）：自然で審美的な付加情報
-BUST_OPTIONS_SOFT = [
-    "natural shape",
-    "subtle lift",
-    "full bust",
-    "firm",
-]
-
-# 付随属性（NSFW寄り）：独立確率で低めに運用
-BUST_OPTIONS_NSFW = [
-    "sagging breasts",
-    "puffy nipples",
-]
-
-# ===== Hair（髪） =====
-# 長さ：冗長さを避けた代表値（原資料から正規化）
+# ===== Hair =====
 HAIR_LENGTHS = [
     "pixie cut",
-    "short",
-    "bob",
-    "lob",
+    "short crop",
+    "chin-length bob",
     "shoulder-length",
     "collarbone-length",
-    "long",
-    "very long",
+    "mid-back length",
     "waist-length",
+    "hip-length",
 ]
 
-# 質感/仕上げ：質感とフィニッシュを混ぜて運用（タグ数の伸びを抑える）
 HAIR_TEXTURES = [
-    "straight",
-    "wavy",
-    "curly",
-    "silky smooth",
-    "voluminous waves",
-    "luxurious curls",
-    "soft straight",
-    "glossy",
-    "shiny",
-    "natural",
+    "sleek straight",
+    "silky straight",
+    "soft wavy",
+    "gentle waves",
+    "loose curls",
+    "defined curls",
+    "spiral curls",
+    "coily texture",
+    "fluffy volume",
+    "smooth layers",
 ]
 
-# スタイル/アレンジ
-HAIR_ARRANGEMENTS = [
-    "elegant updo",
+HAIR_STYLES = [
+    "loose flowing",
     "half-up half-down",
-    "loose ponytail",
+    "twin tails",
     "high ponytail",
     "low ponytail",
-    "side braid",
-    "braided updo",
+    "side ponytail",
+    "loose braid",
+    "braided crown",
     "messy bun",
-    "twin tails",
+    "elegant updo",
 ]
 
-# 前髪/分け目
 HAIR_BANGS_PART = [
     "no bangs",
     "wispy bangs",
-    "curtain bangs",
     "soft fringe",
-    "side-swept bangs",
+    "curtain bangs",
     "blunt bangs",
+    "side-swept bangs",
     "middle part",
+    "off-center part",
     "deep side part",
 ]
 
-# 単色（代表値）
 HAIR_COLORS = [
-    "black",
+    "jet black",
+    "blue-black",
     "dark brown",
-    "light brown",
-    "blonde",
+    "chocolate brown",
+    "chestnut brown",
+    "auburn",
+    "copper",
+    "honey blonde",
+    "strawberry blonde",
     "platinum blonde",
     "ash blonde",
-    "auburn",
-    "burgundy",
-    "chestnut",
-    "copper",
-    "rose gold",
+    "silver gray",
+    "rose pink",
+    "lavender",
+    "teal",
 ]
 
-# ミックス/バレイヤージュ系（代表値）※単色とは排他運用を想定
 HAIR_COLOR_MIX = [
-    "chocolate and caramel",
-    "honey and brown",
-    "rose gold and blonde",
-    "jet black and blonde",
-    "emerald green and blonde",
-    "cobalt blue and blonde",
+    "caramel and chestnut balayage",
+    "honey and chocolate highlights",
+    "rose gold ombre",
+    "peach and blonde gradient",
+    "silver and lavender melt",
+    "black and crimson streaks",
+    "teal and blue balayage",
 ]
 
-# ===== Themes（テーマ） =====
-# - body_bias: 体型の出目に傾きを与えるバイアス
-# - hair_bias: 髪の出目に傾きを与えるバイアス（appearance_tag 側で確率適用）
+# ===== Face =====
+FACE_SHAPES = [
+    "oval face",
+    "round face",
+    "heart-shaped face",
+    "diamond-shaped face",
+    "square face",
+    "long face",
+    "triangle face",
+]
+
+EYE_SHAPES = [
+    "almond eyes",
+    "round eyes",
+    "upturned eyes",
+    "downturned eyes",
+    "monolid eyes",
+    "hooded eyes",
+    "deep-set eyes",
+    "wide-set eyes",
+    "narrow eyes",
+]
+
+NOSE_SHAPES = [
+    "straight nose",
+    "button nose",
+    "upturned nose",
+    "aquiline nose",
+    "roman nose",
+    "petite nose",
+    "snub nose",
+]
+
+LIP_SHAPES = [
+    "full lips",
+    "heart-shaped lips",
+    "bow-shaped lips",
+    "thin lips",
+    "soft pout",
+    "defined cupid's bow",
+    "plush lips",
+]
+
+FACE_DETAILS = [
+    "high cheekbones",
+    "sculpted cheekbones",
+    "soft jawline",
+    "sharp jawline",
+    "defined jawline",
+    "delicate chin",
+    "prominent dimples",
+    "rounded cheeks",
+    "hollowed cheeks",
+    "freckled cheeks",
+]
+
+# ===== Stage 3 Accents =====
+BODY_ACCENTS = [
+    "statuesque posture",
+    "graceful stance",
+    "elegant silhouette",
+    "lithe physique",
+    "poised demeanor",
+    "ballerina poise",
+    "delicate presence",
+]
+
+SKIN_ACCENTS = [
+    "radiant skin",
+    "glowing complexion",
+    "velvety skin",
+    "soft luminous skin",
+    "glossy skin sheen",
+    "silky smooth skin",
+]
+
+FACE_ACCENTS = [
+    "sparkling eyes",
+    "radiant gaze",
+    "piercing gaze",
+    "delicate features",
+    "defined cheek contour",
+    "glowing blush",
+    "refined facial structure",
+]
+
+HAIR_ACCENTS = [
+    "glossy hair",
+    "lustrous hair",
+    "silky hair",
+    "voluminous hair",
+    "flowing hair",
+    "polished hair",
+    "shiny hair",
+]
+
+SENSUAL_ACCENTS = [
+    "sultry aura",
+    "sensuous allure",
+    "smoldering gaze",
+    "tempting presence",
+]
+
+# ===== Themes =====
 THEMES = {
     "model": {
-        "body_bias": [
-            "model-like proportions",
-            "tall and graceful",
-            "balanced physique",
-        ],
-        "hair_bias": [
-            "elegant updo",
-            "waist-length",
-            "glossy",
-        ],
+        "body": {
+            "shapes": ["statuesque form", "slender frame", "toned dancer physique"],
+            "details": ["defined waistline", "long elegant legs"],
+        },
+        "skin": {
+            "tones": ["sun-kissed tan skin", "golden olive skin"],
+            "features": ["luminous glow"],
+        },
+        "hair": {
+            "lengths": ["waist-length", "mid-back length"],
+            "textures": ["sleek straight", "smooth layers"],
+            "styles": ["elegant updo", "loose flowing"],
+            "bangs": ["middle part", "no bangs"],
+            "colors": ["dark brown", "platinum blonde"],
+            "mix": ["caramel and chestnut balayage"],
+        },
+        "face": {
+            "shapes": ["oval face", "diamond-shaped face"],
+            "eyes": ["almond eyes"],
+            "nose": ["straight nose"],
+            "lips": ["full lips", "defined cupid's bow"],
+            "details": ["high cheekbones", "sculpted cheekbones", "defined jawline"],
+        },
+        "decor": {
+            "body": ["statuesque posture"],
+            "skin": ["radiant skin"],
+            "face": ["defined cheek contour"],
+            "hair": ["glossy hair"],
+        },
     },
     "kawaii": {
-        # ★ petite 系と幼さニュアンスはここに集約（ユーザ要望）
-        "body_bias": [
-            "petite yet elegant",
-            "childlike",
-            "doll-like",
-            "little girl frame",
-            "girlish",
-            "innocent look",
-            "cute childish charm",
-        ],
-        "hair_bias": [
-            "twin tails",
-            "curtain bangs",
-            "soft fringe",
-        ],
+        "body": {
+            "shapes": ["petite frame", "softly rounded figure"],
+            "details": ["delicate collarbones", "soft shoulders"],
+        },
+        "skin": {
+            "tones": ["pale rosy skin"],
+            "features": ["rosy cheeks", "soft blush", "delicate freckles"],
+        },
+        "hair": {
+            "lengths": ["shoulder-length", "collarbone-length"],
+            "textures": ["soft wavy", "gentle waves"],
+            "styles": ["twin tails", "loose braid"],
+            "bangs": ["soft fringe", "wispy bangs"],
+            "colors": ["honey blonde", "rose pink"],
+            "mix": ["peach and blonde gradient"],
+        },
+        "face": {
+            "shapes": ["round face"],
+            "eyes": ["round eyes", "upturned eyes"],
+            "nose": ["button nose", "petite nose"],
+            "lips": ["soft pout", "heart-shaped lips"],
+            "details": ["rounded cheeks", "prominent dimples", "soft jawline"],
+        },
+        "decor": {
+            "body": ["delicate presence"],
+            "skin": ["glowing blush"],
+            "face": ["sparkling eyes"],
+            "hair": ["shiny hair"],
+        },
     },
     "gothic": {
-        "body_bias": [],
-        "hair_bias": [
-            "elegant updo",
-            "deep side part",
-            "black",
-        ],
+        "body": {
+            "shapes": ["statuesque form", "slender frame"],
+            "details": ["graceful neck", "delicate collarbones"],
+        },
+        "skin": {
+            "tones": ["porcelain skin"],
+            "features": ["beauty mark below eye", "matte porcelain finish"],
+        },
+        "hair": {
+            "lengths": ["waist-length", "mid-back length"],
+            "textures": ["sleek straight"],
+            "styles": ["elegant updo", "loose flowing"],
+            "bangs": ["curtain bangs", "middle part"],
+            "colors": ["jet black", "blue-black"],
+            "mix": ["black and crimson streaks"],
+        },
+        "face": {
+            "shapes": ["oval face", "diamond-shaped face"],
+            "eyes": ["deep-set eyes", "downturned eyes"],
+            "nose": ["straight nose"],
+            "lips": ["bow-shaped lips", "full lips"],
+            "details": ["sharp jawline", "high cheekbones"],
+        },
+        "decor": {
+            "body": ["elegant silhouette"],
+            "skin": ["velvety skin"],
+            "face": ["piercing gaze"],
+            "hair": ["polished hair"],
+        },
     },
     "wasou": {
-        "body_bias": [],
-        "hair_bias": [
-            "elegant updo",
-            "soft fringe",
-            "low ponytail",
-        ],
+        "body": {
+            "shapes": ["delicate build", "graceful curves"],
+            "details": ["graceful neck", "balletic posture"],
+        },
+        "skin": {
+            "tones": ["porcelain skin", "fair neutral skin"],
+            "features": ["soft blush"],
+        },
+        "hair": {
+            "lengths": ["mid-back length"],
+            "textures": ["sleek straight", "smooth layers"],
+            "styles": ["elegant updo", "low ponytail"],
+            "bangs": ["soft fringe", "curtain bangs"],
+            "colors": ["jet black", "dark brown"],
+            "mix": ["caramel and chestnut balayage"],
+        },
+        "face": {
+            "shapes": ["oval face", "heart-shaped face"],
+            "eyes": ["almond eyes"],
+            "nose": ["straight nose"],
+            "lips": ["soft pout"],
+            "details": ["soft jawline", "delicate chin"],
+        },
+        "decor": {
+            "body": ["poised demeanor"],
+            "skin": ["silky smooth skin"],
+            "face": ["delicate features"],
+            "hair": ["polished hair"],
+        },
     },
 }
+
+# ===== Exclusive Groups =====
+EXCLUSIVE_GROUPS = {
+    "body_shape": {
+        "BODY_SHAPES": BODY_SHAPES,
+    },
+    "skin_tone": {
+        "SKIN_TONES": SKIN_DETAILS["tones"],
+    },
+    "jawline": {
+        "FACE_DETAILS": ["soft jawline", "sharp jawline", "defined jawline"],
+    },
+    "face_shape": {
+        "FACE_SHAPES": FACE_SHAPES,
+    },
+    "eye_shape": {
+        "EYE_SHAPES": EYE_SHAPES,
+    },
+    "nose_shape": {
+        "NOSE_SHAPES": NOSE_SHAPES,
+    },
+    "lip_shape": {
+        "LIP_SHAPES": LIP_SHAPES,
+    },
+    "cheek_volume": {
+        "FACE_DETAILS": ["rounded cheeks", "hollowed cheeks"],
+    },
+    "hair_length": {
+        "HAIR_LENGTHS": HAIR_LENGTHS,
+    },
+    "hair_color": {
+        "HAIR_COLORS": HAIR_COLORS,
+        "HAIR_COLOR_MIX": HAIR_COLOR_MIX,
+    },
+    "hair_part": {
+        "HAIR_BANGS_PART": HAIR_BANGS_PART,
+    },
+}
+
