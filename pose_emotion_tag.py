@@ -81,43 +81,61 @@ CATEGORY_SOURCES: Dict[str, Sequence[str]] = {
 
 BLOCKLIST_TERMS: Tuple[str, ...] = tuple(EXPLICIT_BLOCKLIST)
 
-THEME_PROFILES: Dict[str, Dict[str, object]] = {
-    "Jubilant_Joy": {
-        "preferred_expression": "joy",
-        "pose_focus": ["pose_dynamic", "pose_standing", "pose_sitting"],
-        "pose_conflicts": {"pose_lying"},
-        "mood_conflicts": {"sadness", "anger"},
-    },
-    "Quiet_Sorrow": {
-        "preferred_expression": "sadness",
-        "pose_focus": ["pose_sitting", "pose_lying", "pose_standing"],
-        "pose_conflicts": {"pose_dynamic"},
-        "mood_conflicts": {"joy", "anger", "erotic"},
-        "camera_conflicts": {"dutch angle"},
-    },
-    "Burning_Anger": {
-        "preferred_expression": "anger",
-        "pose_focus": ["pose_dynamic", "pose_standing"],
-        "pose_conflicts": {"pose_lying"},
-        "mood_conflicts": {"joy", "sadness"},
-    },
-    "Seductive_Allure": {
-        "preferred_expression": "allure",
-        "pose_focus": ["pose_standing", "pose_sitting", "pose_dynamic"],
-        "mood_conflicts": {"anger", "sadness"},
-    },
-    "Deep_Ponder": {
-        "preferred_expression": "daily",
-        "pose_focus": ["pose_sitting", "pose_standing"],
-        "pose_conflicts": {"pose_dynamic"},
-        "mood_conflicts": {"anger", "erotic"},
-    },
-    "Passionate_Embrace": {
-        "preferred_expression": "erotic",
-        "pose_focus": ["pose_lying", "pose_sitting", "pose_dynamic"],
-        "mood_conflicts": {"sadness", "anger"},
-    },
-}
+
+def _theme_tag_groups(theme_pack: Optional[Dict[str, object]]) -> List[Tuple[str, List[str]]]:
+    groups: List[Tuple[str, List[str]]] = []
+    if not theme_pack:
+        return groups
+
+    tags_section = theme_pack.get("tags", {}) if isinstance(theme_pack, dict) else {}
+    if isinstance(tags_section, dict):
+        for group_name, values in tags_section.items():
+            if not values:
+                continue
+            cleaned = [tag for tag in values if tag]
+            if cleaned:
+                groups.append((group_name, cleaned))
+    return groups
+
+
+def _flatten_theme_tags(theme_pack: Optional[Dict[str, object]]) -> List[str]:
+    if not theme_pack:
+        return []
+    return merge_unique(*[tags for _, tags in _theme_tag_groups(theme_pack)])
+
+
+def _theme_profile_from_pack(theme_pack: Optional[Dict[str, object]]) -> Optional[Dict[str, object]]:
+    if not theme_pack:
+        return None
+
+    focus = theme_pack.get("focus", {}) if isinstance(theme_pack, dict) else {}
+    conflicts = theme_pack.get("conflicts", {}) if isinstance(theme_pack, dict) else {}
+
+    pose_focus = list(focus.get("pose", [])) if isinstance(focus, dict) else []
+    raw_expressions = focus.get("expression", []) if isinstance(focus, dict) else []
+    if isinstance(raw_expressions, str):
+        preferred_expressions = [raw_expressions]
+    else:
+        preferred_expressions = list(raw_expressions or [])
+
+    pose_conflicts = set()
+    mood_conflicts = set()
+    camera_conflicts = set()
+    blocked_tags = set()
+    if isinstance(conflicts, dict):
+        pose_conflicts = set(conflicts.get("pose_categories", []) or [])
+        mood_conflicts = {str(label).lower() for label in conflicts.get("mood_labels", []) or []}
+        camera_conflicts = {str(tag).lower() for tag in conflicts.get("camera_tags", []) or []}
+        blocked_tags = {str(tag).lower() for tag in conflicts.get("tags", []) or []}
+
+    return {
+        "pose_focus": pose_focus,
+        "preferred_expressions": preferred_expressions,
+        "pose_conflicts": pose_conflicts,
+        "mood_conflicts": mood_conflicts,
+        "camera_conflicts": camera_conflicts,
+        "blocked_tags": blocked_tags,
+    }
 
 
 def _high_level_for(category: Optional[str]) -> Optional[str]:
@@ -187,15 +205,16 @@ def _get_vocab_pools(nsfw_level: str) -> Tuple[Dict[str, List[str]], Dict[str, S
     return pools, tag_category_map
 
 
-def _build_theme_bias(theme_pack: Optional[Dict[str, List[str]]], pools: Dict[str, List[str]]) -> Dict[str, List[str]]:
+def _build_theme_bias(theme_pack: Optional[Dict[str, object]], pools: Dict[str, List[str]]) -> Dict[str, List[str]]:
     bias: Dict[str, List[str]] = {name: [] for name in pools.keys()}
     if not theme_pack:
         return bias
 
-    for tag in merge_unique(theme_pack.get("pose_boost", []), theme_pack.get("expr_boost", []), theme_pack.get("camera_boost", [])):
-        for pool_name, pool in pools.items():
-            if tag in pool and tag not in bias[pool_name]:
-                bias[pool_name].append(tag)
+    for _, tags in _theme_tag_groups(theme_pack):
+        for tag in tags:
+            for pool_name, pool in pools.items():
+                if tag in pool and tag not in bias[pool_name]:
+                    bias[pool_name].append(tag)
     return bias
 
 
@@ -355,7 +374,7 @@ def _resolve_pose_order(theme_profile: Optional[Dict[str, object]]) -> List[str]
 
 def _select_theme_seed_tags(
     rng,
-    theme_pack: Optional[Dict[str, List[str]]],
+    theme_pack: Optional[Dict[str, object]],
     selected_tags: List[str],
     used_groups: Set[str],
     used_high_level: Set[str],
@@ -367,15 +386,15 @@ def _select_theme_seed_tags(
     if not theme_pack:
         return
 
-    for key in ("pose_boost", "expr_boost", "camera_boost"):
-        tags = [tag for tag in theme_pack.get(key, []) if tag]
-        if not tags:
+    for _, tags in _theme_tag_groups(theme_pack):
+        group_tags = list(tags)
+        if not group_tags:
             continue
-        rng.shuffle(tags)
+        rng.shuffle(group_tags)
         required = 1
-        if len(tags) > 2 and maybe(rng, 0.5):
+        if len(group_tags) > 2 and maybe(rng, 0.5):
             required = 2
-        for tag in tags[:required]:
+        for tag in group_tags[:required]:
             pool_name = _primary_pool_for_tag(tag, tag_category_map)
             _try_add_tag(tag, pool_name, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map)
 
@@ -398,11 +417,19 @@ def _select_mood_tag(
     if base_pool_name in pools:
         pool_names.append(base_pool_name)
 
-    preferred = theme_profile.get("preferred_expression") if theme_profile else None
-    if preferred and preferred != expr_mode:
-        preferred_name = f"mood_{preferred}"
-        if preferred_name in pools and preferred_name not in pool_names:
-            pool_names.append(preferred_name)
+    preferred_exprs: Sequence[str] = []
+    if theme_profile:
+        raw_preferred = theme_profile.get("preferred_expressions", [])
+        if isinstance(raw_preferred, str):
+            preferred_exprs = [raw_preferred]
+        else:
+            preferred_exprs = list(raw_preferred or [])
+
+    for preferred in preferred_exprs:
+        if preferred and preferred != expr_mode:
+            preferred_name = f"mood_{preferred}"
+            if preferred_name in pools and preferred_name not in pool_names:
+                pool_names.append(preferred_name)
 
     prioritized: List[Tuple[str, str]] = []
     for pool_name in pool_names:
@@ -542,13 +569,9 @@ def _generate_tags(
     used_high_level: Set[str] = set()
 
     theme_pack = EMOTION_THEME_PACKS.get(theme) if theme != "none" else None
-    theme_profile = THEME_PROFILES.get(theme)
+    theme_profile = _theme_profile_from_pack(theme_pack)
     theme_bias = _build_theme_bias(theme_pack, pools)
-    theme_related_tags = merge_unique(
-        theme_pack.get("pose_boost", []) if theme_pack else [],
-        theme_pack.get("expr_boost", []) if theme_pack else [],
-        theme_pack.get("camera_boost", []) if theme_pack else [],
-    )
+    theme_related_tags = _flatten_theme_tags(theme_pack)
 
     _select_theme_seed_tags(rng, theme_pack, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map)
 
@@ -586,8 +609,16 @@ def _generate_tags(
     if maybe(rng, probs.get("effects", 0.0)):
         _select_from_pool(rng, "effects", pools, theme_bias, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len)
 
+    preferred_exprs: Set[str] = set()
+    if theme_profile:
+        raw_preferred = theme_profile.get("preferred_expressions", [])
+        if isinstance(raw_preferred, str):
+            preferred_exprs = {raw_preferred}
+        else:
+            preferred_exprs = {str(expr) for expr in raw_preferred if expr}
+
     mood_pool_names: List[str] = []
-    for mode in {expr_mode} | ({theme_profile.get("preferred_expression")} if theme_profile and theme_profile.get("preferred_expression") else set()):
+    for mode in {expr_mode} | preferred_exprs:
         pool_name = f"mood_{mode}"
         if pool_name in pools and pool_name not in mood_pool_names:
             mood_pool_names.append(pool_name)
