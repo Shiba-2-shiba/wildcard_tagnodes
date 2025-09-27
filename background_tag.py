@@ -1,7 +1,7 @@
 # background_tag.py
 # 仕様書に基づき、環境フィルターとテーマ連動の抽選ロジックを実装
 
-from .abg_util import rng_from_seed, maybe, pick, join_clean, normalize, merge_unique # <<< 変更点: util -> abg_util
+from .util import rng_from_seed, maybe, pick, join_clean, normalize, merge_unique
 from .vocab.background_vocab import (
     # --- 新しい構造に合わせてimport ---
     BG_ENV_INDOOR, BG_ENV_OUTDOOR, BG_DETAILS_INDOOR, BG_DETAILS_OUTDOOR,

@@ -1,26 +1,44 @@
+from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
-from typing import Dict, List, Set, Tuple
-import re
 from .util import rng_from_seed, maybe, pick, join_clean, limit_len, normalize, merge_unique
 
 from .vocab.pose_emotion_vocab import (
-    # 基本語彙
-    VIEW_ANGLES, VIEW_FRAMING,
-    POSE_STANDING, POSE_SITTING, POSE_LYING, POSE_DYNAMIC,
-    HAND_POSITIONS, HAND_GESTURES, SPINE_AND_SHOULDERS, LEG_POSITIONS,
-    MOUTH_BASE, EYES_BASE, BROWS_BASE, EFFECTS,
-    # 感情モードとテーマ
-    EXPRESSION_MODES, EMOTION_THEME_PACKS,
-    # 排他グループ
+    VIEW_ANGLES,
+    VIEW_FRAMING,
+    POSE_STANDING,
+    POSE_SITTING,
+    POSE_LYING,
+    POSE_DYNAMIC,
+    HAND_POSITIONS,
+    HAND_GESTURES,
+    SPINE_AND_SHOULDERS,
+    LEG_POSITIONS,
+    MOUTH_BASE,
+    EYES_BASE,
+    BROWS_BASE,
+    EFFECTS,
+    MOOD_JOY,
+    MOOD_SADNESS,
+    MOOD_ANGER,
+    MOOD_NEUTRAL,
+    MOOD_ALLURE,
+    MOOD_EROTIC,
+    EXPRESSION_MODES,
+    EMOTION_THEME_PACKS,
     EXCLUSIVE_TAG_GROUPS,
-    # NSFW関連
-    EXTRA_NSFW_POSE, EXTRA_NSFW_EXPR, EXPLICIT_BLOCKLIST,
+    EXTRA_NSFW_POSE,
+    EXTRA_NSFW_EXPR,
+    EXPLICIT_BLOCKLIST,
 )
 
 # ===== 日本語UIマップ =====
 EXPR_MODE_JP = {
-    "日常": "daily", "魅惑": "allure", "喜び": "joy",
-    "悲しみ": "sadness", "怒り": "anger", "官能": "erotic",
+    "日常": "daily",
+    "魅惑": "allure",
+    "喜び": "joy",
+    "悲しみ": "sadness",
+    "怒り": "anger",
+    "官能": "erotic",
 }
 THEME_PACK_JP = {name.replace("_", " "): name for name in EMOTION_THEME_PACKS.keys()}
 THEME_PACK_JP["なし"] = "none"
@@ -28,7 +46,98 @@ THEME_PACK_JP["なし"] = "none"
 COMPLEXITY_JP = {"単純": "simple", "標準": "normal", "複雑": "complex"}
 NSFW_JP = {"オフ": "off", "アダルト寄り(非露骨)": "suggestive", "アダルト(露骨フィルタ)": "explicit"}
 
-# ===== 確率プロファイル関数 =====
+# ===== 定数とテーマプロファイル =====
+FULL_BODY_POOLS = ["pose_standing", "pose_sitting", "pose_dynamic", "pose_lying"]
+EXPRESSION_POOLS = ["mouth", "eyes", "brows"]
+HIGH_LEVEL_PRIORITY = ["camera", "full_body", "upper_body", "lower_body", "expression", "effects"]
+
+MOOD_CATEGORIES: Dict[str, Sequence[str]] = {
+    "joy": MOOD_JOY,
+    "sadness": MOOD_SADNESS,
+    "anger": MOOD_ANGER,
+    "neutral": MOOD_NEUTRAL,
+    "allure": MOOD_ALLURE,
+    "erotic": MOOD_EROTIC,
+}
+
+MOOD_TAG_TO_LABEL: Dict[str, str] = {}
+for label, tags in MOOD_CATEGORIES.items():
+    for tag in tags:
+        MOOD_TAG_TO_LABEL[tag] = label
+
+CATEGORY_SOURCES: Dict[str, Sequence[str]] = {
+    "view": merge_unique(VIEW_ANGLES, VIEW_FRAMING),
+    "pose_standing": POSE_STANDING,
+    "pose_sitting": POSE_SITTING,
+    "pose_dynamic": POSE_DYNAMIC,
+    "pose_lying": POSE_LYING,
+    "upper_body": merge_unique(HAND_POSITIONS, HAND_GESTURES, SPINE_AND_SHOULDERS),
+    "lower_body": LEG_POSITIONS,
+    "mouth": MOUTH_BASE,
+    "eyes": EYES_BASE,
+    "brows": BROWS_BASE,
+    "effects": EFFECTS,
+}
+
+BLOCKLIST_TERMS: Tuple[str, ...] = tuple(EXPLICIT_BLOCKLIST)
+
+THEME_PROFILES: Dict[str, Dict[str, object]] = {
+    "Jubilant_Joy": {
+        "preferred_expression": "joy",
+        "pose_focus": ["pose_dynamic", "pose_standing", "pose_sitting"],
+        "pose_conflicts": {"pose_lying"},
+        "mood_conflicts": {"sadness", "anger"},
+    },
+    "Quiet_Sorrow": {
+        "preferred_expression": "sadness",
+        "pose_focus": ["pose_sitting", "pose_lying", "pose_standing"],
+        "pose_conflicts": {"pose_dynamic"},
+        "mood_conflicts": {"joy", "anger", "erotic"},
+        "camera_conflicts": {"dutch angle"},
+    },
+    "Burning_Anger": {
+        "preferred_expression": "anger",
+        "pose_focus": ["pose_dynamic", "pose_standing"],
+        "pose_conflicts": {"pose_lying"},
+        "mood_conflicts": {"joy", "sadness"},
+    },
+    "Seductive_Allure": {
+        "preferred_expression": "allure",
+        "pose_focus": ["pose_standing", "pose_sitting", "pose_dynamic"],
+        "mood_conflicts": {"anger", "sadness"},
+    },
+    "Deep_Ponder": {
+        "preferred_expression": "daily",
+        "pose_focus": ["pose_sitting", "pose_standing"],
+        "pose_conflicts": {"pose_dynamic"},
+        "mood_conflicts": {"anger", "erotic"},
+    },
+    "Passionate_Embrace": {
+        "preferred_expression": "erotic",
+        "pose_focus": ["pose_lying", "pose_sitting", "pose_dynamic"],
+        "mood_conflicts": {"sadness", "anger"},
+    },
+}
+
+
+def _high_level_for(category: Optional[str]) -> Optional[str]:
+    if not category:
+        return None
+    if category == "view":
+        return "camera"
+    if category in {"upper_body"}:
+        return "upper_body"
+    if category in {"lower_body"}:
+        return "lower_body"
+    if category in {"mouth", "eyes", "brows"} or category.startswith("mood_"):
+        return "expression"
+    if category == "effects":
+        return "effects"
+    if category.startswith("pose_"):
+        return "full_body"
+    return None
+
+
 def _complexity_profile(level: str) -> Dict[str, float]:
     base = dict(view=0.8, full_body=1.0, upper_body=0.8, lower_body=0.6, expression=1.0, effects=0.5)
     if level == "simple":
@@ -37,100 +146,471 @@ def _complexity_profile(level: str) -> Dict[str, float]:
         base.update(view=0.95, upper_body=0.95, lower_body=0.8, effects=0.7)
     return base
 
-# ===== 語彙プール準備関数 =====
-def _get_vocab_pools(nsfw_level: str) -> Dict[str, List[str]]:
-    try:
-        from .vocab.pose_emotion_vocab import EXPLICIT_SEX_POSES, EXPLICIT_SEX_LEXICON
-    except ImportError:
-        EXPLICIT_SEX_POSES = []
-        EXPLICIT_SEX_LEXICON = []
-        
-    pools = {
-        "view": merge_unique(VIEW_ANGLES, VIEW_FRAMING),
-        "pose_standing": POSE_STANDING[:], "pose_sitting": POSE_SITTING[:],
-        "pose_lying": POSE_LYING[:], "pose_dynamic": POSE_DYNAMIC[:],
-        "upper_body": merge_unique(HAND_POSITIONS, HAND_GESTURES, SPINE_AND_SHOULDERS),
-        "lower_body": LEG_POSITIONS[:], "mouth": MOUTH_BASE[:],
-        "eyes": EYES_BASE[:], "brows": BROWS_BASE[:], "effects": EFFECTS[:],
-    }
-    for mode, data in EXPRESSION_MODES.items():
-        pools[f"mood_{mode}"] = data["mood"]
 
-    if nsfw_level in ["suggestive", "explicit"]:
+def _get_vocab_pools(nsfw_level: str) -> Tuple[Dict[str, List[str]], Dict[str, Set[str]]]:
+    pools: Dict[str, List[str]] = {
+        "view": list(CATEGORY_SOURCES["view"]),
+        "pose_standing": list(CATEGORY_SOURCES["pose_standing"]),
+        "pose_sitting": list(CATEGORY_SOURCES["pose_sitting"]),
+        "pose_dynamic": list(CATEGORY_SOURCES["pose_dynamic"]),
+        "pose_lying": list(CATEGORY_SOURCES["pose_lying"]),
+        "upper_body": list(CATEGORY_SOURCES["upper_body"]),
+        "lower_body": list(CATEGORY_SOURCES["lower_body"]),
+        "mouth": list(CATEGORY_SOURCES["mouth"]),
+        "eyes": list(CATEGORY_SOURCES["eyes"]),
+        "brows": list(CATEGORY_SOURCES["brows"]),
+        "effects": list(CATEGORY_SOURCES["effects"]),
+    }
+
+    for mode, data in EXPRESSION_MODES.items():
+        pools[f"mood_{mode}"] = list(data.get("mood", []))
+
+    if nsfw_level in {"suggestive", "explicit"}:
         pools["upper_body"].extend(EXTRA_NSFW_POSE)
         pools["lower_body"].extend(EXTRA_NSFW_POSE)
         for mode in ["allure", "erotic"]:
+            pools.setdefault(f"mood_{mode}", [])
             pools[f"mood_{mode}"].extend(EXTRA_NSFW_EXPR)
         pools["effects"].extend(EXTRA_NSFW_EXPR)
 
+    tag_category_map: Dict[str, Set[str]] = {}
+
+    def _register(category: str, tags: Iterable[str]) -> None:
+        for tag in tags:
+            if not tag:
+                continue
+            tag_category_map.setdefault(tag, set()).add(category)
+
+    for category, tags in pools.items():
+        _register(category, tags)
+
+    return pools, tag_category_map
+
+
+def _build_theme_bias(theme_pack: Optional[Dict[str, List[str]]], pools: Dict[str, List[str]]) -> Dict[str, List[str]]:
+    bias: Dict[str, List[str]] = {name: [] for name in pools.keys()}
+    if not theme_pack:
+        return bias
+
+    for tag in merge_unique(theme_pack.get("pose_boost", []), theme_pack.get("expr_boost", []), theme_pack.get("camera_boost", [])):
+        for pool_name, pool in pools.items():
+            if tag in pool and tag not in bias[pool_name]:
+                bias[pool_name].append(tag)
+    return bias
+
+
+def _primary_pool_for_tag(tag: str, tag_category_map: Dict[str, Set[str]]) -> Optional[str]:
+    categories = list(tag_category_map.get(tag, []))
+    if not categories:
+        return None
+    preferred_order = ["view"] + FULL_BODY_POOLS + ["upper_body", "lower_body", "eyes", "mouth", "brows", "effects"]
+    for candidate in preferred_order:
+        if candidate in categories:
+            return candidate
+    return categories[0]
+
+
+def _is_blocked_tag(tag: str, nsfw_level: str) -> bool:
     if nsfw_level == "explicit":
-        pools["pose_dynamic"].extend(EXPLICIT_SEX_POSES)
-        pools["mood_erotic"].extend(EXPLICIT_SEX_LEXICON)
-    return pools
-
-# ===== タグ生成コア関数 =====
-# [修正] 戻り値を (タグのリスト, 使用済み排他グループのセット) に変更
-def _compose(rng, probs: Dict[str, float], pools: Dict[str, List[str]],
-             expr_mode: str, theme: str, gaze_target: str,
-             tag_to_group_map: Dict[str, str]) -> Tuple[List[str], Set[str]]:
-
-    chosen_tags: List[str] = []
-    used_exclusive_groups: Set[str] = set()
-
-    def _handle_exclusive_selection(pool: List[str]) -> str | None:
-        available_pool = [t for t in pool if tag_to_group_map.get(t) not in used_exclusive_groups]
-        if not available_pool: return None
-        tag = pick(rng, available_pool)
-        if tag:
-            group = tag_to_group_map.get(tag)
-            if group: used_exclusive_groups.add(group)
-        return tag
-
-    if theme != "none" and theme in EMOTION_THEME_PACKS:
-        pack = EMOTION_THEME_PACKS[theme]
-        boost_tags = pack.get("pose_boost", []) + pack.get("expr_boost", []) + pack.get("camera_boost", [])
-        chosen_tags.extend(boost_tags)
-        for tag in boost_tags:
-            group = tag_to_group_map.get(tag)
-            if group: used_exclusive_groups.add(group)
-
-    if maybe(rng, probs["full_body"]):
-        cat = pick(rng, ["pose_standing", "pose_sitting", "pose_lying", "pose_dynamic"])
-        if tag := _handle_exclusive_selection(pools[cat]): chosen_tags.append(tag)
-    if maybe(rng, probs["upper_body"]):
-        if tag := _handle_exclusive_selection(pools["upper_body"]): chosen_tags.append(tag)
-    if maybe(rng, probs["lower_body"]):
-        if tag := _handle_exclusive_selection(pools["lower_body"]): chosen_tags.append(tag)
-    if maybe(rng, probs["view"]):
-        if tag := _handle_exclusive_selection(pools["view"]): chosen_tags.append(tag)
-
-    if maybe(rng, probs["expression"]):
-        chosen_tags.append(pick(rng, pools["mouth"]))
-        chosen_tags.append(pick(rng, pools["eyes"]))
-        if maybe(rng, 0.6): chosen_tags.append(pick(rng, pools["brows"]))
-        
-        if gaze_target != "自動":
-            if gaze_target == "closed": chosen_tags.append("closed eyes")
-            else:
-                group = tag_to_group_map.get(gaze_target)
-                if group not in used_exclusive_groups:
-                    chosen_tags.append(gaze_target)
-                    if group: used_exclusive_groups.add(group)
-        else:
-            if tag := _handle_exclusive_selection(pools["eyes"]): chosen_tags.append(tag)
-
-        if mood_pool := pools.get(f"mood_{expr_mode}", []):
-            chosen_tags.append(pick(rng, mood_pool))
-
-    if maybe(rng, probs["effects"]):
-        chosen_tags.append(pick(rng, pools["effects"]))
-
-    unique_tags = merge_unique(*[chosen_tags])
-    sanitized_tags = unique_tags
-    return sanitized_tags, used_exclusive_groups
+        return False
+    lowered = tag.strip().lower()
+    for blocked in BLOCKLIST_TERMS:
+        if blocked in lowered:
+            return True
+    return False
 
 
-# ===== ComfyUIノードクラス =====
+def _is_conflicting_with_theme(
+    tag: str,
+    pool_name: Optional[str],
+    theme_profile: Optional[Dict[str, object]],
+    tag_category_map: Dict[str, Set[str]],
+) -> bool:
+    if not theme_profile:
+        return False
+
+    lowered = tag.lower()
+    blocked_tags = theme_profile.get("blocked_tags")
+    if blocked_tags and lowered in blocked_tags:
+        return True
+
+    mood_label = MOOD_TAG_TO_LABEL.get(tag)
+    mood_conflicts = theme_profile.get("mood_conflicts") or set()
+    if mood_label and mood_label in mood_conflicts:
+        return True
+
+    pose_conflicts: Set[str] = set(theme_profile.get("pose_conflicts", set()))
+    if pose_conflicts:
+        for category in tag_category_map.get(tag, set()):
+            if category in pose_conflicts:
+                return True
+
+    camera_conflicts: Set[str] = set(theme_profile.get("camera_conflicts", set()))
+    if pool_name == "view" and camera_conflicts:
+        if any(keyword in lowered for keyword in camera_conflicts):
+            return True
+    return False
+
+
+def _can_use_tag(
+    tag: str,
+    pool_name: Optional[str],
+    selected_tags: List[str],
+    used_groups: Set[str],
+    nsfw_level: str,
+    theme_profile: Optional[Dict[str, object]],
+    tag_to_group_map: Dict[str, str],
+    tag_category_map: Dict[str, Set[str]],
+) -> bool:
+    if not tag or tag in selected_tags:
+        return False
+    if _is_blocked_tag(tag, nsfw_level):
+        return False
+    if _is_conflicting_with_theme(tag, pool_name, theme_profile, tag_category_map):
+        return False
+    group = tag_to_group_map.get(tag)
+    if group and group in used_groups:
+        return False
+    return True
+
+
+def _try_add_tag(
+    tag: Optional[str],
+    pool_name: Optional[str],
+    selected_tags: List[str],
+    used_groups: Set[str],
+    used_high_level: Set[str],
+    nsfw_level: str,
+    theme_profile: Optional[Dict[str, object]],
+    tag_to_group_map: Dict[str, str],
+    tag_category_map: Dict[str, Set[str]],
+    max_len: Optional[int] = None,
+) -> bool:
+    if not tag:
+        return False
+    if not _can_use_tag(tag, pool_name, selected_tags, used_groups, nsfw_level, theme_profile, tag_to_group_map, tag_category_map):
+        return False
+
+    if max_len is not None:
+        prospective = selected_tags + [tag]
+        if len(join_clean(prospective)) > max_len:
+            return False
+
+    selected_tags.append(tag)
+    group = tag_to_group_map.get(tag)
+    if group:
+        used_groups.add(group)
+    for category in tag_category_map.get(tag, set()):
+        high = _high_level_for(category)
+        if high:
+            used_high_level.add(high)
+    return True
+
+
+def _select_from_pool(
+    rng,
+    pool_name: str,
+    pools: Dict[str, List[str]],
+    theme_bias: Dict[str, List[str]],
+    selected_tags: List[str],
+    used_groups: Set[str],
+    used_high_level: Set[str],
+    nsfw_level: str,
+    theme_profile: Optional[Dict[str, object]],
+    tag_to_group_map: Dict[str, str],
+    tag_category_map: Dict[str, Set[str]],
+    max_len: Optional[int] = None,
+) -> Optional[str]:
+    pool = pools.get(pool_name, [])
+    if not pool:
+        return None
+
+    prioritized = merge_unique(theme_bias.get(pool_name, []), pool)
+    available = [
+        tag
+        for tag in prioritized
+        if _can_use_tag(tag, pool_name, selected_tags, used_groups, nsfw_level, theme_profile, tag_to_group_map, tag_category_map)
+    ]
+    if not available:
+        return None
+
+    bias_candidates = [tag for tag in theme_bias.get(pool_name, []) if tag in available]
+    choice_source = bias_candidates if bias_candidates and maybe(rng, 0.65) else available
+    choice = pick(rng, choice_source)
+    if _try_add_tag(choice, pool_name, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len):
+        return choice
+    return None
+
+
+def _resolve_pose_order(theme_profile: Optional[Dict[str, object]]) -> List[str]:
+    default_order = list(FULL_BODY_POOLS)
+    if not theme_profile:
+        return default_order
+    focus = list(theme_profile.get("pose_focus", []))
+    conflicts = set(theme_profile.get("pose_conflicts", set()))
+    order = [pool for pool in focus if pool in FULL_BODY_POOLS and pool not in conflicts]
+    order.extend(pool for pool in FULL_BODY_POOLS if pool not in order and pool not in conflicts)
+    return order
+
+
+def _select_theme_seed_tags(
+    rng,
+    theme_pack: Optional[Dict[str, List[str]]],
+    selected_tags: List[str],
+    used_groups: Set[str],
+    used_high_level: Set[str],
+    nsfw_level: str,
+    theme_profile: Optional[Dict[str, object]],
+    tag_to_group_map: Dict[str, str],
+    tag_category_map: Dict[str, Set[str]],
+) -> None:
+    if not theme_pack:
+        return
+
+    for key in ("pose_boost", "expr_boost", "camera_boost"):
+        tags = [tag for tag in theme_pack.get(key, []) if tag]
+        if not tags:
+            continue
+        rng.shuffle(tags)
+        required = 1
+        if len(tags) > 2 and maybe(rng, 0.5):
+            required = 2
+        for tag in tags[:required]:
+            pool_name = _primary_pool_for_tag(tag, tag_category_map)
+            _try_add_tag(tag, pool_name, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map)
+
+
+def _select_mood_tag(
+    rng,
+    pools: Dict[str, List[str]],
+    theme_bias: Dict[str, List[str]],
+    selected_tags: List[str],
+    used_groups: Set[str],
+    used_high_level: Set[str],
+    nsfw_level: str,
+    theme_profile: Optional[Dict[str, object]],
+    tag_to_group_map: Dict[str, str],
+    tag_category_map: Dict[str, Set[str]],
+    expr_mode: str,
+) -> bool:
+    pool_names: List[str] = []
+    base_pool_name = f"mood_{expr_mode}"
+    if base_pool_name in pools:
+        pool_names.append(base_pool_name)
+
+    preferred = theme_profile.get("preferred_expression") if theme_profile else None
+    if preferred and preferred != expr_mode:
+        preferred_name = f"mood_{preferred}"
+        if preferred_name in pools and preferred_name not in pool_names:
+            pool_names.append(preferred_name)
+
+    prioritized: List[Tuple[str, str]] = []
+    for pool_name in pool_names:
+        prioritized.extend((pool_name, tag) for tag in merge_unique(theme_bias.get(pool_name, []), pools.get(pool_name, [])))
+
+    available = [
+        (pool_name, tag)
+        for pool_name, tag in prioritized
+        if _can_use_tag(tag, pool_name, selected_tags, used_groups, nsfw_level, theme_profile, tag_to_group_map, tag_category_map)
+    ]
+    if not available:
+        return False
+
+    bias_candidates = [item for item in available if item[1] in theme_bias.get(item[0], [])]
+    pool_name, tag = pick(rng, bias_candidates if bias_candidates and maybe(rng, 0.7) else available)
+    return _try_add_tag(tag, pool_name, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map)
+
+
+def _select_expression_bundle(
+    rng,
+    pools: Dict[str, List[str]],
+    theme_bias: Dict[str, List[str]],
+    selected_tags: List[str],
+    used_groups: Set[str],
+    used_high_level: Set[str],
+    nsfw_level: str,
+    theme_profile: Optional[Dict[str, object]],
+    tag_to_group_map: Dict[str, str],
+    tag_category_map: Dict[str, Set[str]],
+    expr_mode: str,
+    gaze_target: str,
+    max_len: Optional[int],
+) -> bool:
+    added = False
+    if _select_from_pool(rng, "mouth", pools, theme_bias, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len):
+        added = True
+
+    if gaze_target == "自動":
+        if _select_from_pool(rng, "eyes", pools, theme_bias, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len):
+            added = True
+    else:
+        manual_tag = "closed eyes" if gaze_target == "closed" else gaze_target
+        pool_name = "eyes" if manual_tag in pools.get("eyes", []) else _primary_pool_for_tag(manual_tag, tag_category_map)
+        if _try_add_tag(manual_tag, pool_name, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len):
+            added = True
+
+    if maybe(rng, 0.6):
+        if _select_from_pool(rng, "brows", pools, theme_bias, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len):
+            added = True
+
+    if _select_mood_tag(rng, pools, theme_bias, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, expr_mode):
+        added = True
+
+    return added
+
+
+def _categories_for_high_level(high_level: str, mood_pool_names: Sequence[str]) -> List[str]:
+    if high_level == "camera":
+        return ["view"]
+    if high_level == "full_body":
+        return list(FULL_BODY_POOLS)
+    if high_level == "upper_body":
+        return ["upper_body"]
+    if high_level == "lower_body":
+        return ["lower_body"]
+    if high_level == "effects":
+        return ["effects"]
+    if high_level == "expression":
+        return list(EXPRESSION_POOLS) + list(mood_pool_names)
+    return []
+
+
+def _fill_remaining(
+    rng,
+    pools: Dict[str, List[str]],
+    theme_bias: Dict[str, List[str]],
+    theme_related_tags: List[str],
+    selected_tags: List[str],
+    used_groups: Set[str],
+    used_high_level: Set[str],
+    nsfw_level: str,
+    theme_profile: Optional[Dict[str, object]],
+    tag_to_group_map: Dict[str, str],
+    tag_category_map: Dict[str, Set[str]],
+    max_len: int,
+    mood_pool_names: Sequence[str],
+) -> None:
+    buckets: Dict[int, List[Tuple[Optional[str], str]]] = {0: [], 1: [], 2: []}
+    seen: Set[str] = set()
+
+    for tag in theme_related_tags:
+        if tag in selected_tags or not tag:
+            continue
+        pool_name = _primary_pool_for_tag(tag, tag_category_map)
+        buckets[0].append((pool_name, tag))
+
+    for high_level in HIGH_LEVEL_PRIORITY:
+        if high_level in used_high_level:
+            continue
+        for pool_name in _categories_for_high_level(high_level, mood_pool_names):
+            if pool_name not in pools:
+                continue
+            prioritized = merge_unique(theme_bias.get(pool_name, []), pools.get(pool_name, []))
+            for tag in prioritized:
+                buckets[1].append((pool_name, tag))
+
+    for pool_name, pool in pools.items():
+        prioritized = merge_unique(theme_bias.get(pool_name, []), pool)
+        for tag in prioritized:
+            buckets[2].append((pool_name, tag))
+
+    for priority in sorted(buckets.keys()):
+        rng.shuffle(buckets[priority])
+        for pool_name, tag in buckets[priority]:
+            if tag in seen:
+                continue
+            seen.add(tag)
+            if _try_add_tag(tag, pool_name, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len):
+                if len(join_clean(selected_tags)) >= max_len:
+                    return
+
+
+def _generate_tags(
+    rng,
+    probs: Dict[str, float],
+    pools: Dict[str, List[str]],
+    tag_category_map: Dict[str, Set[str]],
+    tag_to_group_map: Dict[str, str],
+    expr_mode: str,
+    theme: str,
+    gaze_target: str,
+    nsfw_level: str,
+    max_len: int,
+) -> List[str]:
+    selected_tags: List[str] = []
+    used_groups: Set[str] = set()
+    used_high_level: Set[str] = set()
+
+    theme_pack = EMOTION_THEME_PACKS.get(theme) if theme != "none" else None
+    theme_profile = THEME_PROFILES.get(theme)
+    theme_bias = _build_theme_bias(theme_pack, pools)
+    theme_related_tags = merge_unique(
+        theme_pack.get("pose_boost", []) if theme_pack else [],
+        theme_pack.get("expr_boost", []) if theme_pack else [],
+        theme_pack.get("camera_boost", []) if theme_pack else [],
+    )
+
+    _select_theme_seed_tags(rng, theme_pack, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map)
+
+    if maybe(rng, probs.get("view", 0.0)):
+        _select_from_pool(rng, "view", pools, theme_bias, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len)
+
+    if maybe(rng, probs.get("full_body", 0.0)):
+        for pool_name in _resolve_pose_order(theme_profile):
+            if _select_from_pool(rng, pool_name, pools, theme_bias, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len):
+                break
+
+    if maybe(rng, probs.get("upper_body", 0.0)):
+        _select_from_pool(rng, "upper_body", pools, theme_bias, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len)
+
+    if maybe(rng, probs.get("lower_body", 0.0)):
+        _select_from_pool(rng, "lower_body", pools, theme_bias, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len)
+
+    if maybe(rng, probs.get("expression", 0.0)):
+        _select_expression_bundle(
+            rng,
+            pools,
+            theme_bias,
+            selected_tags,
+            used_groups,
+            used_high_level,
+            nsfw_level,
+            theme_profile,
+            tag_to_group_map,
+            tag_category_map,
+            expr_mode,
+            gaze_target,
+            max_len,
+        )
+
+    if maybe(rng, probs.get("effects", 0.0)):
+        _select_from_pool(rng, "effects", pools, theme_bias, selected_tags, used_groups, used_high_level, nsfw_level, theme_profile, tag_to_group_map, tag_category_map, max_len=max_len)
+
+    mood_pool_names: List[str] = []
+    for mode in {expr_mode} | ({theme_profile.get("preferred_expression")} if theme_profile and theme_profile.get("preferred_expression") else set()):
+        pool_name = f"mood_{mode}"
+        if pool_name in pools and pool_name not in mood_pool_names:
+            mood_pool_names.append(pool_name)
+
+    _fill_remaining(
+        rng,
+        pools,
+        theme_bias,
+        theme_related_tags,
+        selected_tags,
+        used_groups,
+        used_high_level,
+        nsfw_level,
+        theme_profile,
+        tag_to_group_map,
+        tag_category_map,
+        max_len,
+        mood_pool_names,
+    )
+
+    return merge_unique(selected_tags)
+
+
 class PoseEmotionTagNode:
     @classmethod
     def INPUT_TYPES(cls):
@@ -151,8 +631,9 @@ class PoseEmotionTagNode:
                 "確率: 視点/構図": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05}),
                 "確率: 表情": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05}),
                 "確率: エフェクト": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05}),
-            }
+            },
         }
+
     RETURN_TYPES = ("STRING",)
     FUNCTION = "generate"
     CATEGORY = "tagging"
@@ -169,48 +650,33 @@ class PoseEmotionTagNode:
 
         base_probs = _complexity_profile(complexity)
         probs = {
-            "full_body":  base_probs["full_body"]  * kwargs.get("確率: 全身ポーズ", 1.0),
+            "full_body": base_probs["full_body"] * kwargs.get("確率: 全身ポーズ", 1.0),
             "upper_body": base_probs["upper_body"] * kwargs.get("確率: 上半身", 1.0),
             "lower_body": base_probs["lower_body"] * kwargs.get("確率: 下半身", 1.0),
-            "view":       base_probs["view"]       * kwargs.get("確率: 視点/構図", 1.0),
+            "view": base_probs["view"] * kwargs.get("確率: 視点/構図", 1.0),
             "expression": base_probs["expression"] * kwargs.get("確率: 表情", 1.0),
-            "effects":    base_probs["effects"]    * kwargs.get("確率: エフェクト", 1.0),
+            "effects": base_probs["effects"] * kwargs.get("確率: エフェクト", 1.0),
         }
 
-        pools = _get_vocab_pools(nsfw_level)
-        
+        pools, tag_category_map = _get_vocab_pools(nsfw_level)
         tag_to_group_map = {tag: name for name, tags in EXCLUSIVE_TAG_GROUPS.items() for tag in tags}
 
-        # 1. 最初のタグセットを生成
-        current_tags, used_groups = _compose(rng, probs, pools, expr_mode, theme, gaze_target, tag_to_group_map)
+        tags = _generate_tags(
+            rng,
+            probs,
+            pools,
+            tag_category_map,
+            tag_to_group_map,
+            expr_mode,
+            theme,
+            gaze_target,
+            nsfw_level,
+            max_len,
+        )
 
-        # 2. [新規] 最大文字数までタグを充填
-        # 全カテゴリの語彙を一つのリストにまとめ、シャッフルする
-        fill_pool = [tag for pool in pools.values() for tag in pool]
-        rng.shuffle(fill_pool)
+        prompt = join_clean(tags)
+        prompt = normalize(prompt, lowercase)
+        prompt = limit_len(prompt, max_len)
 
-        for candidate_tag in fill_pool:
-            # 既に存在するタグ、または排他グループが使用済みのタグはスキップ
-            if not candidate_tag or candidate_tag in current_tags:
-                continue
-            if tag_to_group_map.get(candidate_tag) in used_groups:
-                continue
-
-            # 追加後の文字列長をチェック (+2 は ", " の分)
-            if len(join_clean(current_tags + [candidate_tag])) > max_len:
-                continue
-
-            # タグを追加し、使用済み排他グループを更新
-            current_tags.append(candidate_tag)
-            group = tag_to_group_map.get(candidate_tag)
-            if group:
-                used_groups.add(group)
-
-        # 最終的な文字列を生成
-        tag = join_clean(current_tags)
-        tag = normalize(tag, lowercase)
-        # 念のため最終的な文字数制限をかける
-        tag = limit_len(tag, max_len)
-
-        return (tag,)
+        return (prompt,)
 
