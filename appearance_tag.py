@@ -63,7 +63,7 @@ def _compose_body(rng, p, L, sexy: bool) -> str:
     bust_nsfw = pick(rng, L["bust_nsfw"]) if sexy and bust and maybe(rng, p["p_bust_nsfw"]) else None
 
     parts = [base, detail, bust, bust_soft, bust_nsfw]
-    return join_clean([x for x in parts if x])
+    return join_clean([x for x in parts if x], sep=" ")
 
 def _compose_hair(rng, p, L) -> str:
     # 色ミックス or 単色（排他）
@@ -81,11 +81,11 @@ def _compose_hair(rng, p, L) -> str:
     # テーマ髪バイアス（例: kawaii -> twin tails / curtain bangs など）
     bias = pick(rng, L["hair_bias"]) if L.get("hair_bias") and maybe(rng, p["p_hair_bias"]) else None
 
-    head = join_clean([length, texture, arr, bias])
+    head = join_clean([length, texture, arr, bias], sep=" ")
     if head:
         head = head + " hair"
 
-    return join_clean([color, head, bangs])
+    return join_clean([color, head, bangs], sep=" ")
 
 # ===== ノード本体 =====
 class AppearanceTagNode:
@@ -169,7 +169,7 @@ class AppearanceTagNode:
         body = _compose_body(rng, p, L, sexy)
         hair = _compose_hair(rng, p, L)
 
-        tag = join_clean([body, hair])
+        tag = join_clean([body, hair], sep=" ")
         tag = normalize(tag, 小文字化)
         tag = limit_len(tag, 最大文字数)
         return (tag,)
