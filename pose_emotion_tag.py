@@ -570,6 +570,39 @@ def _generate_tags(
 
     theme_pack = EMOTION_THEME_PACKS.get(theme) if theme != "none" else None
     theme_profile = _theme_profile_from_pack(theme_pack)
+
+    # ==========================================================
+    # ▼▼▼ ここからが修正・追加部分 ▼▼▼
+    # ==========================================================
+    # theme_profile が None の場合でも安全に扱えるよう初期化
+    if theme_profile is None:
+        theme_profile = {}
+
+    # 「魅惑」「日常」「喜び」モードの場合、動的に涙関連のタグをブロック対象に追加
+    if expr_mode in {"allure", "daily", "joy"}:
+        
+        # 既存のセットを確実に初期化
+        if "blocked_tags" not in theme_profile:
+            theme_profile["blocked_tags"] = set()
+        
+        # ブロックしたい涙関連のタグを定義
+        sad_tags_to_block = {
+            "tears", "streaming tears", "tears in eyes", "crying", "tearful",
+            # 念のため、悲しみのムードタグもブロック
+            "sad", "unhappy", "melancholy", "sorrowful", "dejected", 
+            "depressed", "heartbroken",
+        }
+        # ブロックリストに上記タグを追加
+        theme_profile["blocked_tags"].update(sad_tags_to_block)
+
+        # 念のため、sadness ムード自体も競合対象に追加
+        if "mood_conflicts" not in theme_profile:
+            theme_profile["mood_conflicts"] = set()
+        theme_profile["mood_conflicts"].add("sadness")
+    # ==========================================================
+    # ▲▲▲ ここまで ▲▲▲
+    # ==========================================================
+
     theme_bias = _build_theme_bias(theme_pack, pools)
     theme_related_tags = _flatten_theme_tags(theme_pack)
 
@@ -710,4 +743,3 @@ class PoseEmotionTagNode:
         prompt = limit_len(prompt, max_len)
 
         return (prompt,)
-
