@@ -4,7 +4,6 @@
 # ===== Body =====
 BODY_SHAPES = [
     "slender frame",
-    "athletic build",
     "graceful curves",
     "petite frame",
     "statuesque form",
@@ -17,7 +16,6 @@ BODY_SHAPES = [
 BODY_DETAILS = [
     "defined waistline",
     "long elegant legs",
-    "sculpted abs",
     "soft shoulders",
     "delicate collarbones",
     "balletic posture",
@@ -30,22 +28,12 @@ SKIN_DETAILS = {
         "porcelain skin",
         "pale rosy skin",
         "fair neutral skin",
-        "warm beige skin",
-        "golden olive skin",
-        "sun-kissed tan skin",
-        "bronzed skin",
-        "deep cocoa skin",
-        "rich ebony skin",
     ],
     "features": [
-        "dusting of freckles",
-        "delicate freckles",
         "rosy cheeks",
         "soft blush",
         "beauty mark below eye",
         "beauty mark near lips",
-        "subtle sun spots",
-        "mole on cheek",
     ],
     "finishes": [
         "dewy complexion",
@@ -53,6 +41,9 @@ SKIN_DETAILS = {
         "velvety smooth skin",
         "matte porcelain finish",
         "radiant sheen",
+        "translucent skin",
+        "flawless complexion",
+        "silken skin",
     ],
 }
 
@@ -188,6 +179,9 @@ FACE_DETAILS = [
     "rounded cheeks",
     "hollowed cheeks",
     "freckled cheeks",
+    "well-defined features",
+    "symmetrical face",
+    "youthful facial structure",
 ]
 
 # ===== Stage 3 Accents =====
@@ -218,6 +212,7 @@ FACE_ACCENTS = [
     "defined cheek contour",
     "glowing blush",
     "refined facial structure",
+    "captivating eyes",
 ]
 
 HAIR_ACCENTS = [
@@ -228,6 +223,9 @@ HAIR_ACCENTS = [
     "flowing hair",
     "polished hair",
     "shiny hair",
+    "hair catching the light",
+    "strands of hair shimmering",
+    "softly swaying hair",
 ]
 
 SENSUAL_ACCENTS = [
@@ -245,7 +243,7 @@ THEMES = {
             "details": ["defined waistline", "long elegant legs"],
         },
         "skin": {
-            "tones": ["sun-kissed tan skin", "golden olive skin"],
+            "tones": [],
             "features": ["luminous glow"],
         },
         "hair": {
@@ -277,7 +275,7 @@ THEMES = {
         },
         "skin": {
             "tones": ["pale rosy skin"],
-            "features": ["rosy cheeks", "soft blush", "delicate freckles"],
+            "features": ["rosy cheeks", "soft blush"],
         },
         "hair": {
             "lengths": ["shoulder-length", "collarbone-length"],
@@ -402,4 +400,3 @@ EXCLUSIVE_GROUPS = {
         "HAIR_BANGS_PART": HAIR_BANGS_PART,
     },
 }
-
