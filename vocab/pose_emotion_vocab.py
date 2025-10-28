@@ -157,40 +157,80 @@ EXPRESSION_MODES: Dict[str, Dict[str, List[str]]] = {
 EMOTION_THEME_PACKS: Dict[str, Dict[str, object]] = {
     "Jubilant_Joy": {
         "tags": {
-            "pose": ["jumping", "dancing", "twirling", "arms outstretched", "leaping"],
-            "expression": ["ecstatic", "beaming", "laughing", "joyful", "sparkling eyes"],
-            "camera": ["wide angle", "full shot", "dynamic pose"],
+            "pose": [
+                "jumping with arms wide",
+                "dancing mid-spin",
+                "cheerful skip",
+                "hands raised in celebration",
+                "leaping forward",
+            ],
+            "expression": [
+                "radiant smile",
+                "beaming eyes",
+                "joyful laughter",
+                "sparkling eyes",
+                "grinning with delight",
+            ],
+            "camera": ["wide angle", "dynamic full-body shot", "slightly tilted celebration shot"],
+            "accent": ["confetti burst", "sunlit glow"],
         },
         "focus": {
-            "pose": ["pose_dynamic", "pose_standing", "pose_sitting"],
+            "pose": ["pose_dynamic", "pose_standing"],
             "expression": ["joy"],
         },
         "conflicts": {
             "pose_categories": ["pose_lying"],
-            "mood_labels": ["sadness", "anger"],
+            "mood_labels": ["sadness", "anger", "erotic", "allure"],
+            "tags": ["tears", "crying", "melancholy", "grimace"],
         },
     },
     "Quiet_Sorrow": {
         "tags": {
-            "pose": ["hugging knees", "sitting on the floor", "slumped shoulders", "head down", "covering face"],
-            "expression": ["melancholy", "crying", "tearful", "sorrowful", "furrowed brows"],
-            "camera": ["close-up", "from above", "rainy"],
+            "pose": [
+                "hugging knees close",
+                "sitting curled on the floor",
+                "slumped shoulders",
+                "head bowed and hands clasped",
+                "leaning against a wall in solitude",
+            ],
+            "expression": [
+                "softly crying",
+                "tearful gaze",
+                "downturned lips",
+                "glassy eyes",
+                "somber expression",
+            ],
+            "camera": ["intimate close-up", "overhead melancholy shot", "window light with rain"],
+            "accent": ["raindrops on cheeks", "dim ambient glow"],
         },
         "focus": {
-            "pose": ["pose_sitting", "pose_lying", "pose_standing"],
+            "pose": ["pose_sitting", "pose_lying"],
             "expression": ["sadness"],
         },
         "conflicts": {
             "pose_categories": ["pose_dynamic"],
-            "mood_labels": ["joy", "anger", "erotic"],
-            "camera_tags": ["dutch angle"],
+            "mood_labels": ["joy", "anger", "erotic", "allure"],
+            "camera_tags": ["dutch angle", "hero shot"],
+            "tags": ["radiant smile", "laughing", "celebratory"],
         },
     },
     "Burning_Anger": {
         "tags": {
-            "pose": ["power stance", "fist clenched", "fighting stance", "pointing"],
-            "expression": ["furious", "glaring", "scowling", "shouting", "enraged"],
-            "camera": ["dutch angle", "low angle", "dramatic lighting"],
+            "pose": [
+                "power stance with clenched fists",
+                "forward-leaning confrontation",
+                "shouting mid-gesture",
+                "arms thrown wide in fury",
+            ],
+            "expression": [
+                "furious glare",
+                "snarling",
+                "teeth bared",
+                "brows sharply furrowed",
+                "shouting with intensity",
+            ],
+            "camera": ["low angle", "dynamic dutch angle", "high-contrast lighting"],
+            "accent": ["embers flying", "crackling aura"],
         },
         "focus": {
             "pose": ["pose_dynamic", "pose_standing"],
@@ -198,50 +238,91 @@ EMOTION_THEME_PACKS: Dict[str, Dict[str, object]] = {
         },
         "conflicts": {
             "pose_categories": ["pose_lying"],
-            "mood_labels": ["joy", "sadness"],
+            "mood_labels": ["joy", "sadness", "erotic"],
+            "tags": ["tearful", "soft smile", "bashful"],
         },
     },
     "Seductive_Allure": {
         "tags": {
-            "pose": ["arched back", "looking over shoulder", "touching hair", "one leg forward"],
-            "expression": ["seductive", "flirtatious", "biting lip", "winking", "smirk"],
-            "camera": ["medium close-up", "bust shot", "soft lighting"],
+            "pose": [
+                "arched back with one hand in hair",
+                "leaning forward with inviting gaze",
+                "seated with crossed legs and tilted chin",
+                "standing with hip cocked",
+            ],
+            "expression": [
+                "sultry smile",
+                "languid eyes",
+                "biting lip",
+                "playful wink",
+                "half-lidded gaze",
+            ],
+            "camera": ["medium close-up", "bust shot", "soft rim lighting"],
+            "accent": ["softly glowing highlights", "perfumed haze"],
         },
         "focus": {
             "pose": ["pose_standing", "pose_sitting", "pose_dynamic"],
             "expression": ["allure"],
         },
         "conflicts": {
-            "mood_labels": ["anger", "sadness"],
+            "pose_categories": ["pose_lying"],
+            "mood_labels": ["sadness", "anger"],
+            "tags": ["tears", "rage", "awkward grin"],
         },
     },
     "Deep_Ponder": {
         "tags": {
-            "pose": ["sitting cross-legged", "cupping chin", "leaning forward", "hand on cheek"],
-            "expression": ["pensive", "thoughtful", "serious", "neutral expression", "knitted brows"],
-            "camera": ["face shot", "point of view shot", "window light"],
+            "pose": [
+                "sitting cross-legged with chin in hand",
+                "leaning on railing lost in thought",
+                "hand resting against temple",
+                "standing with arms gently folded",
+            ],
+            "expression": [
+                "thoughtful gaze",
+                "soft focus eyes",
+                "subtle smile of contemplation",
+                "slight frown in concentration",
+            ],
+            "camera": ["face shot", "shoulder-level portrait", "window light profile"],
+            "accent": ["dust motes in sunlight", "pen poised above notebook"],
         },
         "focus": {
             "pose": ["pose_sitting", "pose_standing"],
-            "expression": ["daily"],
+            "expression": ["daily", "neutral"],
         },
         "conflicts": {
-            "pose_categories": ["pose_dynamic"],
+            "pose_categories": ["pose_dynamic", "pose_lying"],
             "mood_labels": ["anger", "erotic"],
+            "tags": ["tears", "wild laughter", "scream"],
         },
     },
     "Passionate_Embrace": {
         "tags": {
-            "pose": ["arched back", "lying on back", "hands behind head", "legs wrapped around", "embracing"],
-            "expression": ["lustful", "ecstasy", "biting lip", "breathless", "half-closed eyes", "passionate"],
-            "camera": ["close-up", "tight crop", "dramatic lighting", "shadows"],
+            "pose": [
+                "arched back against unseen partner",
+                "lying back with arms overhead",
+                "legs entwined",
+                "hands gripping sheets",
+            ],
+            "expression": [
+                "breathless",
+                "eyes half closed",
+                "biting lip",
+                "flushed ecstasy",
+                "soft moan",
+            ],
+            "camera": ["tight crop", "close-up", "dramatic chiaroscuro lighting"],
+            "accent": ["glowing sweat sheen", "rumpled fabric"],
         },
         "focus": {
-            "pose": ["pose_lying", "pose_sitting", "pose_dynamic"],
+            "pose": ["pose_lying", "pose_sitting"],
             "expression": ["erotic", "allure"],
         },
         "conflicts": {
-            "mood_labels": ["sadness", "anger"],
+            "pose_categories": ["pose_dynamic", "pose_standing"],
+            "mood_labels": ["sadness", "anger", "joy"],
+            "tags": ["tears", "smirk", "grin"],
         },
     },
 }
