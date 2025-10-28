@@ -172,8 +172,8 @@ FACE_DETAILS = [
     "high cheekbones",
     "sculpted cheekbones",
     "soft jawline",
-    "sharp jawline",
-    "defined jawline",
+    "delicately tapered jawline",
+    "softly defined jawline",
     "delicate chin",
     "prominent dimples",
     "rounded cheeks",
@@ -259,7 +259,7 @@ THEMES = {
             "eyes": ["almond eyes"],
             "nose": ["straight nose"],
             "lips": ["full lips", "defined cupid's bow"],
-            "details": ["high cheekbones", "sculpted cheekbones", "defined jawline"],
+            "details": ["high cheekbones", "sculpted cheekbones", "softly defined jawline"],
         },
         "decor": {
             "body": ["statuesque posture"],
@@ -321,7 +321,7 @@ THEMES = {
             "eyes": ["deep-set eyes", "downturned eyes"],
             "nose": ["straight nose"],
             "lips": ["bow-shaped lips", "full lips"],
-            "details": ["sharp jawline", "high cheekbones"],
+            "details": ["delicately tapered jawline", "high cheekbones"],
         },
         "decor": {
             "body": ["elegant silhouette"],
@@ -372,7 +372,7 @@ EXCLUSIVE_GROUPS = {
         "SKIN_TONES": SKIN_DETAILS["tones"],
     },
     "jawline": {
-        "FACE_DETAILS": ["soft jawline", "sharp jawline", "defined jawline"],
+        "FACE_DETAILS": ["soft jawline", "delicately tapered jawline", "softly defined jawline"],
     },
     "face_shape": {
         "FACE_SHAPES": FACE_SHAPES,

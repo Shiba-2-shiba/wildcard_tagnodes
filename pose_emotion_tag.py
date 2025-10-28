@@ -569,13 +569,25 @@ def _generate_tags(
     used_high_level: Set[str] = set()
 
     theme_pack = EMOTION_THEME_PACKS.get(theme) if theme != "none" else None
-    theme_profile = _theme_profile_from_pack(theme_pack)
+    raw_theme_profile = _theme_profile_from_pack(theme_pack)
+    theme_profile = dict(raw_theme_profile or {})
+
+    if theme_profile:
+        pose_conflicts = set(theme_profile.get("pose_conflicts", set()))
+        for conflict in list(pose_conflicts):
+            if conflict in pools:
+                pools.pop(conflict, None)
+        mood_conflicts = {str(label).lower() for label in theme_profile.get("mood_conflicts", set())}
+        for mood_label in mood_conflicts:
+            pool_name = f"mood_{mood_label}"
+            if pool_name in pools:
+                pools.pop(pool_name, None)
 
     # ==========================================================
     # ▼▼▼ ここからが修正・追加部分 ▼▼▼
     # ==========================================================
     # theme_profile が None の場合でも安全に扱えるよう初期化
-    if theme_profile is None:
+    if not theme_profile:
         theme_profile = {}
 
     # 「魅惑」「日常」「喜び」モードの場合、動的に涙関連のタグをブロック対象に追加
